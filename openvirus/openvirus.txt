@@ -1,0 +1,7 @@
+"openvirus"
+{
+	"title"		"open Virus"
+	"maps"		"^ov_"
+	"base"		"base"
+	"menusystem"		"1"
+}
