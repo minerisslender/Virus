@@ -199,7 +199,7 @@ function GM:Think()
     -- Check for players around us to infect
     if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && LocalPlayer():GetInfectionStatus() ) then
     
-        for _, ent in pairs( ents.FindInSphere( LocalPlayer():GetPos(), 8 ) ) do
+        for _, ent in pairs( ents.FindInSphere( LocalPlayer():LocalToWorld( LocalPlayer():OBBCenter() ), 8 ) ) do
         
             if ( ent:IsValid() && ent:IsPlayer() && ( ent:Health() > 0 ) && ( ent:Team() == TEAM_SURVIVOR ) ) then
             

@@ -10,6 +10,7 @@ ov_sv_bot_slower = CreateConVar( "ov_sv_bot_slower", "0", FCVAR_NOTIFY, "Bots ru
 function OV_CREATEBOT( ply, cmd, args, argstring )
 
 	if ( CLIENT ) then return end
+	if ( game.IsDedicated() ) then return end
 	if ( player.GetCount() >= game.MaxPlayers() ) then return end
 	if ( !ply:IsAdmin() ) then return end
 
@@ -23,6 +24,7 @@ concommand.Add( "ov_bot_add", OV_CREATEBOT )
 function OV_CREATEBOTFILL( ply, cmd, args, argstring )
 
 	if ( CLIENT ) then return end
+	if ( game.IsDedicated() ) then return end
 	if ( player.GetCount() >= game.MaxPlayers() ) then return end
 	if ( !ply:IsAdmin() ) then return end
 
@@ -40,6 +42,7 @@ concommand.Add( "ov_bot_add_fill", OV_CREATEBOTFILL )
 function OV_INFECTALLBOTS( ply, cmd, args, argstring )
 
 	if ( CLIENT ) then return end
+	if ( game.IsDedicated() ) then return end
 	if ( !ply:IsAdmin() ) then return end
 
 	for _, ply2 in pairs( player.GetBots() ) do
@@ -60,8 +63,7 @@ function BOT_PlayerSpawn( ply )
 	
 		ply.BotPlayerAttackSpeed = 0
 		ply.BotPlayerAttackSecondary = false
-		ply.BotPlayerAdrenalineUser = tobool( math.random( 0, 1 ) )
-		ply.BotPlayerSkill = math.random( 32, 64 )
+		ply.BotPlayerSkill = math.random( 8, 64 )
 		ply.BotPlayerReactionTime = 0
 	
 		ply:SetAvoidPlayers( false )

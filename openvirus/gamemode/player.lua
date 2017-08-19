@@ -69,6 +69,7 @@ end
 -- Called when a player dies
 function OV_PlayerDeath( ply, inflictor, attacker )
 
+    -- If a player dies
     if ( ply:Team() == TEAM_SURVIVOR ) then
     
         -- Survivor managed to die in the round
@@ -85,6 +86,21 @@ function OV_PlayerDeath( ply, inflictor, attacker )
         ply:SetInfectionStatus( 0 )
 		ply.timeInfectionStatus = 0
         ply:SetColor( Color( 255, 255, 255 ) )
+    
+        -- Infected blood effects
+        if ( ov_sv_infected_blood:GetBool() && ( #ents.FindByClass( "ent_ov_infectedblood" ) <= 128 ) ) then
+        
+            for i = 1, 16 do
+            
+                local bloodeffect = ents.Create( "ent_ov_infectedblood" )
+                bloodeffect:SetPos( ply:LocalToWorld( ply:OBBCenter() ) )
+                bloodeffect:Spawn()
+                bloodeffect:Activate()
+                bloodeffect:GetPhysicsObject():SetVelocity( Vector( math.random( -80, 80 ), math.random( -80, 80 ), 0 ) )
+            
+            end
+        
+        end
     
     end
 

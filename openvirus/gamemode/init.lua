@@ -43,6 +43,9 @@ function GM:Initialize()
 	-- Set the view rollangle to 2
 	game.ConsoleCommand( "sv_rollangle 2\n" )
 
+    -- Set alltalk to 1
+    game.ConsoleCommand( "sv_alltalk 1\n" )
+
 	-- ConVars
 	ov_sv_onlyonesurvivor = CreateConVar( "ov_sv_onlyonesurvivor", "0", FCVAR_NOTIFY, "Only One Survivor gametype. One survivor is set to dominate the infected until time runs out." )
 	ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
@@ -89,7 +92,8 @@ function OV_CStrikeValidation( len, ply )
 	
 		ply.excludeFromGame = false
     
-        ply:ChatPrint( "You're playing open Virus! (Not affiliated with PixelTail)" )
+        ply:ChatPrint( "Welcome to open Virus!" )
+        ply:ChatPrint( "This is not affiliated with PixelTail." )
         ply:ChatPrint( "Version: "..GAMEMODE.Version )
 	
 	else
@@ -97,8 +101,7 @@ function OV_CStrikeValidation( len, ply )
 		ply.excludeFromGame = true
 		ply:Spawn()
 	
-		ply:ChatPrint( "You're not allowed to join this game!" )
-		ply:ChatPrint( "You must buy Counter-Strike: Source to continue." )
+		ply:ChatPrint( "We recommend you buy Counter-Strike: Source to play this gamemode." )
 		ply:ChatPrint( "OR, you can buy Tower Unite to play the official Virus." )
 	
 	end
@@ -245,7 +248,7 @@ function GM:Think()
             
                 if ( ply:IsValid() && ( ply:IsBot() || ov_sv_infection_serverside_only:GetBool() ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
                 
-                    for _, ent in pairs( ents.FindInSphere( ply:GetPos(), 8 ) ) do
+                    for _, ent in pairs( ents.FindInSphere( ply:LocalToWorld( ply:OBBCenter() ), 8 ) ) do
                     
                         if ( ent:IsValid() && ent:IsPlayer() && ( ent:Health() > 0 ) && ( ent:Team() == TEAM_SURVIVOR ) ) then
                         
@@ -329,9 +332,9 @@ function GM:PlayerHurt( ply, attacker, health, dmg )
     end
 
 	-- Infected blood effects
-	if ( ov_sv_infected_blood:GetBool() && ( #ents.FindByClass( "ent_ov_infectedblood" ) <= 64 ) ) then
+	if ( ov_sv_infected_blood:GetBool() && ( #ents.FindByClass( "ent_ov_infectedblood" ) <= 128 ) ) then
 	
-		for i = 1, math.Clamp( dmg, 8, 32 ) do
+		for i = 1, math.random( 4, 8 ) do
 		
 			local bloodeffect = ents.Create( "ent_ov_infectedblood" )
 			bloodeffect:SetPos( ply:LocalToWorld( ply:OBBCenter() ) )
@@ -397,17 +400,17 @@ function GM:BeginPreRound()
 	}
 
     -- Remove some items randomly
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_dualpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 8 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 5 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 6 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 5 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_mp5" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 5 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_p90" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_pistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_silencedpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 7 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 6 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_dualpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_mp5" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_p90" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_pistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_silencedpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
 
 	-- We do not want over 8 weapons
 	if ( #OV_Game_WeaponLoadout > 8 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end

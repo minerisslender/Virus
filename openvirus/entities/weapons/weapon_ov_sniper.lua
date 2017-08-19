@@ -61,7 +61,7 @@ function SWEP:PrimaryAttack()
 	
 	end
 
-    self:ShootBullet( 40, 1, 0 + self.Primary.Accuracy )
+    self:ShootBullet( 50, 1, 0 + self.Primary.Accuracy )
 
     self:TakePrimaryAmmo( 1 )
 
