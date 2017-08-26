@@ -51,7 +51,7 @@ function SWEP:PrimaryAttack()
     self.Weapon:EmitSound( "Weapon_Scout.Single" )
 
 	-- Accuracy determination
-	if ( self.Secondary.Zoomed ) then
+	if ( self.Secondary.Zoomed || ( self.Owner && self.Owner:IsValid() && self.Owner:IsPlayer() && self.Owner:IsBot() ) ) then
 	
 		self.Primary.Accuracy = 0
 	

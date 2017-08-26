@@ -127,7 +127,7 @@ function SWEP:Think()
 				util.Effect( "cball_explode", soniceffect )
 			
 				local attackeyetrace = self.Owner:GetEyeTrace()
-				if ( attackeyetrace.Entity && attackeyetrace.Entity:IsValid() && attackeyetrace.Entity:IsPlayer() && attackeyetrace.Entity:Alive() && ( attackeyetrace.Entity:Team() == TEAM_INFECTED ) && ( attackeyetrace.Entity:GetPos():Distance( self.Owner:GetPos() ) <= 256 ) ) then
+				if ( attackeyetrace.Entity && attackeyetrace.Entity:IsValid() && attackeyetrace.Entity:IsPlayer() && attackeyetrace.Entity:Alive() && ( attackeyetrace.Entity:Team() == TEAM_INFECTED ) && ( attackeyetrace.Entity:GetPos():Distance( self.Owner:GetPos() ) <= 512 ) ) then
 				
 					attackeyetrace.Entity:SetVelocity( ( attackeyetrace.Entity:GetPos() - ( self.Owner:GetPos() - Vector( 0, 0, 4 ) ) ) * math.Remap( attackeyetrace.Entity:GetPos():Distance( self.Owner:GetPos() ), 0, 300, 64, 0 ) )
 				

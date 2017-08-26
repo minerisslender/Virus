@@ -240,7 +240,7 @@ function GM:Think()
 			infected_light.brightness = 0.5
 			infected_light.decay = 1000
 			infected_light.dietime = CurTime() + 1
-			infected_light.pos = LocalPlayer():GetAttachment( LocalPlayer():LookupAttachment( "chest" ) ).Pos
+			infected_light.pos = LocalPlayer():EyePos() - Vector( 0, 0, 16 )
 			infected_light.size = 128
 			infected_light.r = LocalPlayer():GetColor().r
 			infected_light.g = LocalPlayer():GetColor().g
@@ -688,9 +688,9 @@ function GM:HUDPaint()
 	-- Use this splash text when the player does not own CSS
 	if ( !IsMounted( "cstrike" ) ) then
 	
-		draw.SimpleText( "YOU ARE PLAYING OPEN VIRUS.", "BudgetLabel", 2, 0, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-		draw.SimpleText( "WE ARE NOT AFFILIATED WITH PIXELTAIL!", "BudgetLabel", 2, 15, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-		draw.SimpleText( "BUY TOWER UNITE TO PLAY THE OFFICIAL VIRUS GAME", "BudgetLabel", 2, 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		draw.SimpleText( "YOU ARE PLAYING OPEN VIRUS.", "BudgetLabel", 4, ScrH() - 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
+		draw.SimpleText( "WE ARE NOT AFFILIATED WITH PIXELTAIL!", "BudgetLabel", 4, ScrH() - 30, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
+		draw.SimpleText( "BUY TOWER UNITE TO PLAY THE OFFICIAL VIRUS GAME", "BudgetLabel", 4, ScrH(), Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
 	
 	end
 

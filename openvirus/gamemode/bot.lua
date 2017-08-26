@@ -136,7 +136,7 @@ function BOT_StartCommand( ply, ucmd )
 			local distancetable = {}
 			for _, ply2 in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
 			
-				if ( ply2:IsValid() && ply2:Alive() && ply2:Visible( ply ) && ( ply2:GetPos():Distance( ply:GetPos() ) < 1024 ) ) then
+				if ( ply2:IsValid() && ply2:Alive() && ply2:Visible( ply ) && ( ply2:GetPos():Distance( ply:GetPos() ) < 1024 ) && ( ply.BotPlayerReactionTime < CurTime() ) ) then
 				
 					table.insert( distancetable, ply:GetPos():Distance( ply2:GetPos() ) )
 				
@@ -146,7 +146,7 @@ function BOT_StartCommand( ply, ucmd )
 					
 						ply:SetEyeAngles( ( ( ply2:EyePos() - Vector( 0, 0, ply.BotPlayerSkill ) ) - ply:EyePos() ):Angle() )
 					
-						if ( ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ply:GetActiveWeapon().Primary.Automatic ) || ( ply.BotPlayerAttackSpeed < CurTime() ) ) then
+						if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ply:GetActiveWeapon().Primary.Automatic ) then
 						
 							ply.BotPlayerAttackSpeed = CurTime() + 0.25
 							if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() == "weapon_ov_dualpistol" ) ) then ply.BotPlayerAttackSecondary = !ply.BotPlayerAttackSecondary end

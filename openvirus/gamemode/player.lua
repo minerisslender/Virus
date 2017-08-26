@@ -88,7 +88,7 @@ function OV_PlayerDeath( ply, inflictor, attacker )
         ply:SetColor( Color( 255, 255, 255 ) )
     
         -- Infected blood effects
-        if ( ov_sv_infected_blood:GetBool() && ( #ents.FindByClass( "ent_ov_infectedblood" ) <= 128 ) ) then
+        if ( ov_sv_infected_blood:GetBool() && ( #ents.FindByClass( "ent_ov_infectedblood" ) <= 256 ) ) then
         
             for i = 1, 16 do
             
@@ -268,6 +268,10 @@ function GM:PlayerSetModel( ply )
 		
 		end
 	
+	elseif ( ply:Team() == TEAM_INFECTED ) then
+	
+		ply:SetPlayerColor( Vector( math.Remap( 180, 0, 255, 0, 1 ), math.Remap( 255, 0, 255, 0, 1 ), 0 ) )
+	
 	end
 
 end
@@ -300,7 +304,7 @@ function GM:PlayerLoadout( ply )
         ply:Give( tostring( v ) )
         if ( ply:GetWeapon( tostring( v ) ) && ply:GetWeapon( tostring( v ) ):IsValid() ) then
         
-            ply:GiveAmmo( ply:GetWeapon( tostring( v ) ):Clip1() * 4, ply:GetWeapon( tostring( v ) ):GetPrimaryAmmoType(), true )
+            ply:GiveAmmo( ply:GetWeapon( tostring( v ) ):Clip1() * 3, ply:GetWeapon( tostring( v ) ):GetPrimaryAmmoType(), true )
         
         end
     

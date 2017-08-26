@@ -4,4 +4,79 @@
 	"maps"		"^ov_"
 	"base"		"base"
 	"menusystem"		"1"
+
+	"settings"
+	{
+		1
+		{
+			"name"	"ov_sv_onlyonesurvivor"
+			"text"	"[GAMETYPE] Only One Survivor"
+			"help"	"Only One Survivor gametype. One survivor is set to dominate the infected until time runs out."
+			"type"	"CheckBox"
+			"default"	"0"
+		}
+	
+		2
+		{
+			"name"	"ov_sv_infection_serverside_only"
+			"text"	"[INFECTION] Serverside Only"
+			"help"	"Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems."
+			"type"	"CheckBox"
+			"default"	"0"
+		}
+	
+		3
+		{
+			"name"	"ov_sv_infection_clientside_valid_distance"
+			"text"	"[INFECTION] Client Distance"
+			"help"	"With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat."
+			"type"	"Numeric"
+			"default"	"128"
+		}
+	
+		4
+		{
+			"name"	"ov_sv_infected_blood"
+			"text"	"[INFECTED] Blood Effects"
+			"help"	"Enable the infected blood effects."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
+	
+		5
+		{
+			"name"	"ov_sv_infected_specific_model"
+			"text"	"[INFECTED] Specific Model"
+			"help"	"Force infected players to have a specific model with the GAMEMODE.OV_Infected_Model function."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
+	
+		6
+		{
+			"name"	"ov_sv_survivor_suit_sound"
+			"text"	"[SURVIVOR] Suit Sound"
+			"help"	"Enable the survivor suit sound."
+			"type"	"CheckBox"
+			"default"	"0"
+		}
+	
+		7
+		{
+			"name"	"ov_sv_survivor_setup_hands"
+			"text"	"[SURVIVOR] Viewmodel Hands"
+			"help"	"Call SetupHands for survivors. Disabling this means no hands for weapon viewmodels."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
+	
+		8
+		{
+			"name"	"ov_sv_survivor_css_hands"
+			"text"	"[SURVIVOR] Counter-Strike Hands"
+			"help"	"Hands will be forced as CS:S hands for survivors."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
+	}
 }

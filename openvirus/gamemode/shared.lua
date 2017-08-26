@@ -20,7 +20,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev14 (Public Alpha)"
+GM.Version  =   "rev15 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -30,7 +30,7 @@ GM.OV_Infected_Health = 100
 GM.OV_Infected_EnrageHealth = 500
 GM.OV_Infected_Speed = 350
 GM.OV_Infected_EnrageSpeed = 450
-GM.OV_Infected_Model = "models/player/charple.mdl"
+GM.OV_Infected_Model = "models/player/corpse1.mdl"
 
 
 -- Should the player take damage
@@ -51,6 +51,30 @@ function GM:PlayerShouldTakeDamage( ply, attacker )
 	end
 
     return true
+
+end
+
+
+-- Scale the player damage
+function GM:ScalePlayerDamage( ply, hitgroup, info )
+
+	if ( hitgroup == HITGROUP_HEAD ) then
+	
+		info:ScaleDamage( 2 )
+	
+	elseif ( hitgroup == HITGROUP_LEFTLEG ) then
+	
+		info:ScaleDamage( 0.75 )
+	
+	elseif ( hitgroup == HITGROUP_RIGHTLEG ) then
+	
+		info:ScaleDamage( 0.75 )
+	
+	else
+	
+		info:ScaleDamage( 1 )
+	
+	end
 
 end
 
