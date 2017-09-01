@@ -67,7 +67,7 @@ function meta:SetInfectionStatus( bool )
     if ( tobool( bool ) ) then
     
         -- Play a sound
-        self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 50 )
+        self:EmitSound( "ambient/fire/gascan_ignite1.wav" )
     
         -- Start enraged mode here
         if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 2 ) ) then

@@ -48,14 +48,14 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "Weapon_Elite.Single" )
 
-    self:ShootBullet( 10, 1, 0.04 )
+    self:ShootBullet( 15, 1, 0.04 )
 
     self:TakePrimaryAmmo( 1 )
     if ( IsFirstTimePredicted() ) then self.Primary.DualAmmoUsed = self.Primary.DualAmmoUsed + 1 end
 
     self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
 
-    self:SetNextPrimaryFire( CurTime() + 0.1 )
+    self:SetNextPrimaryFire( CurTime() + 0.15 )
 
 end
 
@@ -76,7 +76,7 @@ function SWEP:SecondaryAttack()
 
     self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
 
-    self:SetNextPrimaryFire( CurTime() + 0.1 )
+    self:SetNextPrimaryFire( CurTime() + 0.15 )
 
 end
 

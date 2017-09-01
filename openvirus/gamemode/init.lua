@@ -40,8 +40,8 @@ function GM:Initialize()
 	-- Set the default deploy speed to 1
 	game.ConsoleCommand( "sv_defaultdeployspeed 1\n" )
 
-	-- Set the view rollangle to 1
-	game.ConsoleCommand( "sv_rollangle 1.25\n" )
+	-- Set the view rollangle to 1.5
+	game.ConsoleCommand( "sv_rollangle 1.5\n" )
 
     -- Set alltalk to 1
     game.ConsoleCommand( "sv_alltalk 1\n" )
@@ -49,10 +49,9 @@ function GM:Initialize()
 	-- ConVars
 	ov_sv_onlyonesurvivor = CreateConVar( "ov_sv_onlyonesurvivor", "0", FCVAR_NOTIFY, "Only One Survivor gametype. One survivor is set to dominate the infected until time runs out." )
 	ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
-	ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "128", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
+	ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "256", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
 	ov_sv_infected_blood = CreateConVar( "ov_sv_infected_blood", "1", FCVAR_ARCHIVE, "Enable the infected blood effects." )
 	ov_sv_infected_specific_model = CreateConVar( "ov_sv_infected_specific_model", "1", FCVAR_NOTIFY, "Force infected players to have a specific model with the GAMEMODE.OV_Infected_Model function." )
-	ov_sv_survivor_suit_sound = CreateConVar( "ov_sv_survivor_suit_sound", "0", FCVAR_ARCHIVE, "Enable the survivor suit sound." )
 	ov_sv_survivor_setup_hands = CreateConVar( "ov_sv_survivor_setup_hands", "1", FCVAR_ARCHIVE, "Call SetupHands for survivors. Disabling this means no hands for weapon viewmodels." )
 	ov_sv_survivor_css_hands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
 	ov_sv_allow_non_css_owners = CreateConVar( "ov_sv_allow_non_css_owners", "1", FCVAR_NOTIFY, "Players who don't own CS:S will be allowed to play." )
@@ -240,6 +239,7 @@ function GM:Think()
                 net.Broadcast()
             
                 OV_SetMusic( 4 )
+				BroadcastLua( "surface.PlaySound( \"openvirus/vo/ov_vo_lastchance.wav\" )" )
             
             end
         
@@ -281,28 +281,11 @@ function GM:Think()
         
             if ( ( ( ov_sv_onlyonesurvivor:GetBool() && ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) ) || ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) && ply:IsValid() && ( ply:IsBot() || ( ply:SteamID() != OV_Game_LastRandomChosenInfected ) ) ) then
             
-                if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) ) == team.NumPlayers( TEAM_SURVIVOR ) ) then
+                if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) * 2 ) == ( team.NumPlayers( TEAM_SURVIVOR ) * 2 ) ) then
                 
                     ply:InfectPlayer()
                 
-                    if ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) then BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_begin.wav\" )" ) end
-				
-					-- Warning Biohazard Detected
-					if ( ov_sv_survivor_suit_sound:GetBool() && ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) ) then
-					
-						for _, ply2 in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
-						
-							if ( ply2:IsValid() && ply2:Alive() ) then
-							
-								timer.Simple( 1.0, function() if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_SURVIVOR ) ) then ply2:EmitSound( "hl1/fvox/blip.wav", 75, 60 ) end end )
-								timer.Simple( 1.1, function() if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_SURVIVOR ) ) then ply2:EmitSound( "hl1/fvox/blip.wav", 75, 60 ) end end )
-								timer.Simple( 1.6, function() if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_SURVIVOR ) ) then ply2:EmitSound( "hl1/fvox/biohazard_detected.wav", 75, 100 ) end end )
-							
-							end
-						
-						end
-					
-					end
+                    if ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) then BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_stinger.wav\" )" ) end
 				
 					OV_Game_LastRandomChosenInfected = ply:SteamID()
                 
@@ -420,13 +403,13 @@ function GM:BeginPreRound()
     if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
     if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
 
-	-- We do not want over 7 weapons
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
-	if ( #OV_Game_WeaponLoadout > 7 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
+	-- We do not want over 6 weapons
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
 
     -- Here we will clean up the map
     game.CleanUpMap()
@@ -446,7 +429,7 @@ function GM:BeginPreRound()
 		net.WriteInt( OV_Game_MaxRounds, 8 )
     net.Broadcast()
 
-    timer.Create( "OV_RoundTimer", math.random( 20, 30 ), 1, function() GAMEMODE:BeginMainRound() end )
+    timer.Create( "OV_RoundTimer", math.random( 20, 25 ), 1, function() GAMEMODE:BeginMainRound() end )
 
     -- Close Scoreboard for players
     BroadcastLua( "GAMEMODE:ScoreboardHide()" )
@@ -570,7 +553,7 @@ function GM:EndMainRound()
 		net.WriteInt( OV_Game_MaxRounds, 8 )
     net.Broadcast()
 
-    timer.Create( "OV_RoundTimer", 12, 1, function() GAMEMODE:BeginPreRound() end )
+    timer.Create( "OV_RoundTimer", 15, 1, function() GAMEMODE:BeginPreRound() end )
 
     net.Start( "OV_SendTimerCount" )
         net.WriteInt( 0, 16 )
@@ -584,7 +567,8 @@ function GM:EndMainRound()
             net.WriteInt( 5, 4 )
         net.Broadcast()
     
-        BroadcastLua( "surface.PlaySound( \"openvirus/music/ov_end_survivor.mp3\" )" )
+		OV_SetMusic( 6 )
+        BroadcastLua( "surface.PlaySound( \"openvirus/vo/ov_vo_survivorswin.wav\" )" )
     
     else
     
@@ -594,7 +578,8 @@ function GM:EndMainRound()
             net.WriteInt( 5, 4 )
         net.Broadcast()
     
-        BroadcastLua( "surface.PlaySound( \"openvirus/music/ov_end_infected.mp3\" )" )
+		OV_SetMusic( 5 )
+        BroadcastLua( "surface.PlaySound( \"openvirus/vo/ov_vo_infectedwin.wav\" )" )
     
     end
 
@@ -608,7 +593,7 @@ function GM:EndMainRound()
 		
 		end
 	
-		timer.Simple( 14, function() game.LoadNextMap() end )
+		timer.Simple( 20, function() game.LoadNextMap() end )
 	
 	end
 

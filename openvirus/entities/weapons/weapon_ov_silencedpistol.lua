@@ -47,7 +47,7 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "Weapon_USP.SilencedShot" )
 
-    self:ShootBullet( 14, 1, 0.005 )
+    self:ShootBullet( 18, 1, 0.005 )
 
     self:TakePrimaryAmmo( 1 )
 

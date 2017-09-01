@@ -63,8 +63,7 @@ function BOT_PlayerSpawn( ply )
 	
 		ply.BotPlayerAttackSpeed = 0
 		ply.BotPlayerAttackSecondary = false
-		ply.BotPlayerSkill = math.random( 8, 64 )
-		ply.BotPlayerReactionTime = 0
+		ply.BotPlayerSkill = math.random( 16, 64 )
 	
 		ply:SetAvoidPlayers( false )
 	
@@ -136,19 +135,16 @@ function BOT_StartCommand( ply, ucmd )
 			local distancetable = {}
 			for _, ply2 in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
 			
-				if ( ply2:IsValid() && ply2:Alive() && ply2:Visible( ply ) && ( ply2:GetPos():Distance( ply:GetPos() ) < 1024 ) && ( ply.BotPlayerReactionTime < CurTime() ) ) then
+				if ( ply2:IsValid() && ply2:Alive() && ply2:Visible( ply ) && ( ply2:GetPos():Distance( ply:GetPos() ) < 1024 ) ) then
 				
 					table.insert( distancetable, ply:GetPos():Distance( ply2:GetPos() ) )
 				
-					if ( #distancetable < 1 ) then ply.BotPlayerReactionTime = CurTime() + 1 end
-				
-					if ( ( ply.BotPlayerReactionTime < CurTime() ) && ( ply:GetPos():Distance( ply2:GetPos() ) == math.min( unpack( distancetable ) ) ) ) then
+					if ( ply:GetPos():Distance( ply2:GetPos() ) == math.min( unpack( distancetable ) ) ) then
 					
 						ply:SetEyeAngles( ( ( ply2:EyePos() - Vector( 0, 0, ply.BotPlayerSkill ) ) - ply:EyePos() ):Angle() )
 					
-						if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ply:GetActiveWeapon().Primary.Automatic ) then
+						if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon().Primary.Automatic || ( ply.BotPlayerAttackSpeed < CurTime() ) ) ) then
 						
-							ply.BotPlayerAttackSpeed = CurTime() + 0.25
 							if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() == "weapon_ov_dualpistol" ) ) then ply.BotPlayerAttackSecondary = !ply.BotPlayerAttackSecondary end
 						
 							if ( !ply.BotPlayerAttackSecondary ) then
@@ -160,6 +156,8 @@ function BOT_StartCommand( ply, ucmd )
 								ucmd:SetButtons( IN_ATTACK2 )
 							
 							end
+						
+							ply.BotPlayerAttackSpeed = CurTime() + 0.25
 						
 						end
 					

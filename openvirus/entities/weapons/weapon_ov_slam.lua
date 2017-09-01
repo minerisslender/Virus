@@ -39,7 +39,7 @@ SWEP.RemoveTime = 0
 function SWEP:Initialize()
 
     self:SetHoldType( "melee" )
-	self:SetDeploySpeed( 4 )
+	self:SetDeploySpeed( 8 )
 
 end
 

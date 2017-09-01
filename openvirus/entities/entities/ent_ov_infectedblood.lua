@@ -13,8 +13,9 @@ ENT.SpriteSize = 8
 function ENT:Initialize()
 
 	self:SetModel( "models/weapons/w_bugbait.mdl" )
+	self:DrawShadow( false )
 
-	self.LifeTime = CurTime() + 4
+	self.LifeTime = CurTime() + 3
 	self.SpriteSize = math.random( 8, 16 )
 
 	self:SetCustomCollisionCheck( true )
@@ -53,7 +54,7 @@ if ( CLIENT ) then
 	
 		-- Draw a sprite
 		render.SetMaterial( self.Material )
-		render.DrawSprite( self.Entity:GetPos(), self.SpriteSize, self.SpriteSize, Color( 180, 255, 0, 255 ) )
+		render.DrawSprite( self.Entity:GetPos(), self.SpriteSize, self.SpriteSize, Color( 180, 255, 0, math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 2 ), 0, 2, 0, 255 ) ) )
 	
 	end
 

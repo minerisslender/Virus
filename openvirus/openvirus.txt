@@ -31,7 +31,7 @@
 			"text"	"[INFECTION] Client Distance"
 			"help"	"With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat."
 			"type"	"Numeric"
-			"default"	"128"
+			"default"	"256"
 		}
 	
 		4
@@ -54,15 +54,6 @@
 	
 		6
 		{
-			"name"	"ov_sv_survivor_suit_sound"
-			"text"	"[SURVIVOR] Suit Sound"
-			"help"	"Enable the survivor suit sound."
-			"type"	"CheckBox"
-			"default"	"0"
-		}
-	
-		7
-		{
 			"name"	"ov_sv_survivor_setup_hands"
 			"text"	"[SURVIVOR] Viewmodel Hands"
 			"help"	"Call SetupHands for survivors. Disabling this means no hands for weapon viewmodels."
@@ -70,7 +61,7 @@
 			"default"	"1"
 		}
 	
-		8
+		7
 		{
 			"name"	"ov_sv_survivor_css_hands"
 			"text"	"[SURVIVOR] Counter-Strike Hands"

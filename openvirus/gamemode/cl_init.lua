@@ -52,6 +52,8 @@ function GM:Initialize()
     OV_Sounds_PreRound = {}
     OV_Sounds_InRound = {}
     OV_Sounds_LastSurvivor = {}
+	OV_Sounds_InfectedWin = {}
+	OV_Sounds_SurvivorsWin = {}
 
     -- Create some Client ConVars
     ov_cl_hl2_wpn_selection = CreateClientConVar( "ov_cl_hl2_wpn_selection", "1", true, false )
@@ -61,6 +63,26 @@ function GM:Initialize()
     ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
     ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
     ov_cl_hud_force_hiscale = CreateClientConVar( "ov_cl_hud_force_hiscale", "0", true, false )
+
+	-- Display the help menu if we a missing this thing
+	if ( !file.Exists( "openvirus", "DATA" ) ) then
+	
+		file.CreateDir( "openvirus" )
+	
+	end
+
+	if ( !file.Exists( "openvirus/client", "DATA" ) ) then
+	
+		file.CreateDir( "openvirus/client" )
+	
+	end
+
+	if ( !file.Exists( "openvirus/client/seen_help_menu.txt", "DATA" ) ) then
+	
+		file.Write( "openvirus/client/seen_help_menu.txt", "Delete me if you want the help menu to appear automatically again." )
+		GAMEMODE:ShowHelp()
+	
+	end
 
 end
 
@@ -91,7 +113,7 @@ function GM:InitializeLang()
 	language.Add( "weapon_ov_dualpistol", "Dual Pistols" )
 	language.Add( "weapon_ov_flak", "Flak .357" )
 	language.Add( "weapon_ov_laserpistol", "Laser Gun" )
-	language.Add( "weapon_ov_laserrifle", "Laser Rifle" )
+	language.Add( "weapon_ov_laserrifle", "Laser Rifle Mk. II" )
 	language.Add( "weapon_ov_m3", "M3 Shotgun" )
 	language.Add( "weapon_ov_mp5", "MP5 Navy" )
 	language.Add( "weapon_ov_p90", "P90" )
@@ -133,7 +155,7 @@ end
 function GM:InitializeSounds()
 
     -- Waiting For Players music
-	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/wfp/*", "GAME" )
+	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/wfp/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
 		table.insert( OV_Sounds_WaitingForPlayers, CreateSound( game.GetWorld(), "openvirus/music/wfp/"..v ) )
@@ -143,7 +165,7 @@ function GM:InitializeSounds()
 	end
 
 	-- PreRound music
-	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/pround/*", "GAME" )
+	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/pround/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
 		table.insert( OV_Sounds_PreRound, CreateSound( game.GetWorld(), "openvirus/music/pround/"..v ) )
@@ -153,7 +175,7 @@ function GM:InitializeSounds()
 	end
 
 	-- Round music
-	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/inround/*", "GAME" )
+	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/inround/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
 		table.insert( OV_Sounds_InRound, CreateSound( game.GetWorld(), "openvirus/music/inround/"..v ) )
@@ -163,12 +185,32 @@ function GM:InitializeSounds()
 	end
 
 	-- Last Survivor music
-	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/laststanding/*", "GAME" )
+	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/laststanding/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
 		table.insert( OV_Sounds_LastSurvivor, CreateSound( game.GetWorld(), "openvirus/music/laststanding/"..v ) )
 		OV_Sounds_LastSurvivor[ k ]:SetSoundLevel( 0 )
 		OV_Sounds_LastSurvivor[ k ]:Stop()
+	
+	end
+
+	-- Infected Win music
+	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/infected_win/*.mp3", "GAME" )
+	for k, v in pairs( OV_Sounds_FileList ) do
+	
+		table.insert( OV_Sounds_InfectedWin, CreateSound( game.GetWorld(), "openvirus/music/infected_win/"..v ) )
+		OV_Sounds_InfectedWin[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_InfectedWin[ k ]:Stop()
+	
+	end
+
+	-- Survivors Win music
+	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/survivors_win/*.mp3", "GAME" )
+	for k, v in pairs( OV_Sounds_FileList ) do
+	
+		table.insert( OV_Sounds_SurvivorsWin, CreateSound( game.GetWorld(), "openvirus/music/survivors_win/"..v ) )
+		OV_Sounds_SurvivorsWin[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_SurvivorsWin[ k ]:Stop()
 	
 	end
 
@@ -310,6 +352,7 @@ function OV_SendTimerCount( len )
     if ( OV_Game_InRound && timer.Exists( "OV_RoundTimer" ) ) then
     
         local OV_CountdownTimer_Text = {}
+		local OV_CountdownTimer_Text_Number = 5
     
         timer.Create( "OV_CountdownTimer_15", timer.TimeLeft( "OV_RoundTimer" ) - 15.5, 1, function()
         
@@ -331,21 +374,23 @@ function OV_SendTimerCount( len )
         OV_CountdownTimer_Text = {}
     
         timer.Create( "OV_CountdownTimer", timer.TimeLeft( "OV_RoundTimer" ) - 6.5, 1, function()
-        
+		
             timer.Remove( "OV_CountdownTimer" )
             timer.Create( "OV_CountdownTimer", 1, 5, function()
             
                 if ( timer.Exists( "OV_RoundTimer" ) ) then
                 
                     OV_CountdownTimer_Text = {}
-                    OV_CountdownTimer_Text.text = tostring( math.Round( timer.TimeLeft( "OV_RoundTimer" ) ) )
+                    OV_CountdownTimer_Text.text = tostring( OV_CountdownTimer_Text_Number )
                     OV_CountdownTimer_Text.color = Color( 255, 255, 255 )
                     OV_CountdownTimer_Text.time = CurTime() + 2.75
 					OV_CountdownTimer_Text.timeSet = 2.75
                 
                     table.insert( OV_CountdownText, OV_CountdownTimer_Text )
                     surface.PlaySound( "buttons/bell1.wav" )
-                
+				
+					OV_CountdownTimer_Text_Number = OV_CountdownTimer_Text_Number - 1
+				
                 end
             
             end )
@@ -411,6 +456,8 @@ function OV_SetMusic( len )
     -- 2 is preround music
     -- 3 is inround music
     -- 4 is last survivor music
+	-- 5 is infected win music
+	-- 6 is survivors win music
 
     if ( setmusic_state <= 0 ) then
     
@@ -438,6 +485,18 @@ function OV_SetMusic( len )
         
         end
     
+        for k, v in pairs( OV_Sounds_InfectedWin ) do
+        
+            v:Stop()
+        
+        end
+    
+        for k, v in pairs( OV_Sounds_SurvivorsWin ) do
+        
+            v:Stop()
+        
+        end
+    
     elseif ( setmusic_state == 1 ) then
     
         if ( #OV_Sounds_WaitingForPlayers > 0 ) then OV_Sounds_WaitingForPlayers[ math.random( 1, #OV_Sounds_WaitingForPlayers ) ]:Play() end
@@ -450,9 +509,17 @@ function OV_SetMusic( len )
     
         if ( #OV_Sounds_InRound > 0 ) then OV_Sounds_InRound[ math.random( 1, #OV_Sounds_InRound ) ]:Play() end
     
-    elseif ( setmusic_state >= 4 ) then
+    elseif ( setmusic_state == 4 ) then
     
         if ( #OV_Sounds_LastSurvivor > 0 ) then OV_Sounds_LastSurvivor[ math.random( 1, #OV_Sounds_LastSurvivor ) ]:Play() end
+    
+    elseif ( setmusic_state == 5 ) then
+    
+        if ( #OV_Sounds_InfectedWin > 0 ) then OV_Sounds_InfectedWin[ math.random( 1, #OV_Sounds_InfectedWin ) ]:Play() end
+    
+    elseif ( setmusic_state >= 6 ) then
+    
+        if ( #OV_Sounds_SurvivorsWin > 0 ) then OV_Sounds_SurvivorsWin[ math.random( 1, #OV_Sounds_SurvivorsWin ) ]:Play() end
     
     end
 
@@ -812,7 +879,7 @@ hook.Add( "PostDrawTranslucentRenderables", "OV_PostDrawTranslucentRenderables",
 function OV_CalcView( ply, pos, ang, fov, zn, zf )
 
     -- Infected thirdperson
-    if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) ) then
+    if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( ( LocalPlayer():Team() == TEAM_INFECTED ) || OV_Game_WaitingForPlayers ) ) then
     
         local tracepos = {}
         tracepos.start = pos
@@ -985,7 +1052,7 @@ function OV_RenderScreenspaceEffects()
 		-- Last Survivor
 		if ( OV_Game_InRound && LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( team.NumPlayers( TEAM_SURVIVOR ) < 2 ) ) then
 		
-			DrawBloom( 0.65, 2, 9, 9, 1, 1, 1, 1, 1 )
+			DrawBloom( 0.75, 2, 9, 9, 1, 1, 1, 1, 1 )
 		
 		end
 
@@ -1023,12 +1090,10 @@ hook.Add( "EntityEmitSound", "OV_EntityEmitSound", OV_EntityEmitSound )
 function GM:ShowHelp()
 
 	local helpframe = vgui.Create( "DFrame" )
-	helpframe:SetSize( 640, 400 )
+	helpframe:SetSize( 640, 480 )
 	helpframe:SetDraggable( false )
 	helpframe:SetBackgroundBlur( true )
 	helpframe:SetTitle( "Help" )
-	helpframe:Center()
-	helpframe:MakePopup()
 
 	local helppanel = vgui.Create( "DPanel", helpframe )
 	helppanel:Dock( FILL )
@@ -1036,7 +1101,12 @@ function GM:ShowHelp()
 	local helplabel = vgui.Create( "DLabel", helppanel )
 	helplabel:SetPos( 2, 2 )
 	helplabel:SetColor( Color( 0, 0, 0, 255 ) )
-	helplabel:SetText( "Welcome to open Virus (Alpha)!\n\nThis gamemode is an open-source recreation of the popular GMod Tower and Tower Unite gamemode called Virus. \nThe concept is the same, however, there are differences:\n\n> This gamemode does NOT use weapons or content from GMod Tower or Tower Unite.\n> Servers can change the gameplay of open Virus.\n> open Virus is NOT created by the PixelTail developers. We recommend buying Tower Unite if you want to support them.\n> open Virus uses Counter-Strike: Source content.\n> If a player doesn't have Counter-Strike: Source, they will be kicked automatically. This allows us to promote Tower Unite.\n> open Virus is hosted on Github. The community is allowed to make improvements if needed.\n\n\nAvoid being infected.\nWork as a team.\nUse Adrenaline (C) when necessary.\nInfect if you're infected." )
+	helplabel:SetText( "How to play open Virus:\n\nThe gamemode is essentially zombie survival but with fast-paced rounds.\nSurvivors must survive the entire round (typically 90 seconds) in order to win.\nInfected must spread the virus to all survivors within the given time in order to win.\n\nPlayers CANNOT use basic movement keys such as crouching, jumping or zooming.\nSurvivors can use C to quick-switch to adrenaline.\nSurvivors should work as a team.\nInfected must be aware of SLAMs.\nInfected must run into players to infect them." )
 	helplabel:SizeToContents()
+
+	local helplabel_size_x, helplabel_size_y = helplabel:GetSize()
+	helpframe:SetSize( helplabel_size_x + 4, helplabel_size_y + 40 )
+	helpframe:Center()
+	helpframe:MakePopup()
 
 end

@@ -50,7 +50,7 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav", 75, 125 )
 
-    self:ShootBullet( 12, 1, 0 )
+    self:ShootBullet( 16, 1, 0.015 )
 
     self:TakePrimaryAmmo( 1 )
 

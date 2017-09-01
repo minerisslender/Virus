@@ -49,7 +49,7 @@ function SWEP:PrimaryAttack()
 
     self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
-	if ( IsFirstTimePredicted() ) then self.RemoveTime = CurTime() + 0.75 end
+	if ( IsFirstTimePredicted() ) then self.RemoveTime = CurTime() + 0.5 end
 	self.Used = true
 
 end
@@ -75,7 +75,7 @@ end
 -- Whip it out (hue)
 function SWEP:Deploy()
 
-	self.DeployTime = CurTime() + 0.25
+	self.DeployTime = CurTime() + 0.1
 	self.Used = false
 
 	return true

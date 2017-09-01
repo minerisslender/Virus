@@ -12,7 +12,6 @@ SWEP.Primary.ClipSize = 10
 SWEP.Primary.DefaultClip = 10
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "OV_Sniper"
-SWEP.Primary.Accuracy = 0
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
@@ -50,18 +49,7 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "Weapon_Scout.Single" )
 
-	-- Accuracy determination
-	if ( self.Secondary.Zoomed || ( self.Owner && self.Owner:IsValid() && self.Owner:IsPlayer() && self.Owner:IsBot() ) ) then
-	
-		self.Primary.Accuracy = 0
-	
-	else
-	
-		self.Primary.Accuracy = 0.4
-	
-	end
-
-    self:ShootBullet( 50, 1, 0 + self.Primary.Accuracy )
+    self:ShootBullet( 75, 1, 0 )
 
     self:TakePrimaryAmmo( 1 )
 
