@@ -3,7 +3,7 @@
 SWEP.PrintName = "#weapon_ov_laserpistol"
 SWEP.UseHands = true
 
-SWEP.ViewModelFOV = 62
+SWEP.ViewModelFOV = 58
 SWEP.ViewModelFlip = false
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"

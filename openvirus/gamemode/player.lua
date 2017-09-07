@@ -280,6 +280,9 @@ end
 -- Called when the player spawns and the PlayerLoadout hook is called
 function GM:PlayerLoadout( ply )
 
+    -- Remove all items
+    ply:RemoveAllItems()
+
     -- Waiting for players session
     if ( OV_Game_WaitingForPlayers ) then return end
 
@@ -289,7 +292,6 @@ function GM:PlayerLoadout( ply )
     -- Is on infected team
     if ( ply:Team() == TEAM_INFECTED ) then
     
-        ply:RemoveAllItems()
         ply:SetColor( Color( 180, 255, 0 ) )
         ply:SetBloodColor( DONT_BLEED )
         ply:SetNWInt( "InfectedLastHurt", CurTime() + 4 )

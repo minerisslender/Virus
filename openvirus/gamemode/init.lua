@@ -391,21 +391,21 @@ function GM:BeginPreRound()
 	}
 
     -- Remove some items randomly
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_dualpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_mp5" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_p90" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_pistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_silencedpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
-    if ( ( #OV_Game_WeaponLoadout > 6 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_dualpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_mp5" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_p90" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_pistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_silencedpistol" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
 
 	-- We do not want over 6 weapons
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
 	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
 	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
 	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
 	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end

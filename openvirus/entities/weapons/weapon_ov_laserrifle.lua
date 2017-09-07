@@ -161,7 +161,7 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 	bullet.Dir 		= self.Owner:GetAimVector()
 	bullet.Spread 	= Vector( aimcone, aimcone, 0 )
 	bullet.Tracer	= 1
-	bullet.TracerName = "tooltracer"
+	bullet.TracerName = "plasmatracer"
 	bullet.Force	= 1
 	bullet.Damage	= damage
 	bullet.AmmoType = "Pistol"

@@ -20,16 +20,16 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev16 (Public Alpha)"
+GM.Version  =   "rev17 (Public Alpha)"
 
 
 -- Some global stuff here
 GM.OV_Survivor_Speed = 300
-GM.OV_Survivor_AdrenSpeed = 425
+GM.OV_Survivor_AdrenSpeed = 480
 GM.OV_Infected_Health = 100
 GM.OV_Infected_EnrageHealth = 500
-GM.OV_Infected_Speed = 350
-GM.OV_Infected_EnrageSpeed = 450
+GM.OV_Infected_Speed = 375
+GM.OV_Infected_EnrageSpeed = 475
 GM.OV_Infected_Model = "models/player/corpse1.mdl"
 
 
@@ -58,9 +58,18 @@ end
 -- Scale the player damage
 function GM:ScalePlayerDamage( ply, hitgroup, info )
 
+	-- Bots
+	local attacker = info:GetAttacker()
+	if ( attacker:IsPlayer() && attacker:IsBot() ) then
+	
+		info:ScaleDamage( 0.5 )
+	
+	end
+
+	-- Everything else
 	if ( hitgroup == HITGROUP_HEAD ) then
 	
-		info:ScaleDamage( 2 )
+		info:ScaleDamage( 1.5 )
 	
 	elseif ( hitgroup == HITGROUP_LEFTLEG ) then
 	

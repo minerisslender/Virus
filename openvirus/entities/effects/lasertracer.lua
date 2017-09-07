@@ -1,57 +1,50 @@
--- LaserTracer taken from the Sandbox gamemode
 
-EFFECT.Mat = Material( "effects/spark" )
-
+EFFECT.Mat = Material( "sprites/bluelaser1" )
+EFFECT.SpriteMat = CreateMaterial( "lasertracer_blueflare1", "UnlitGeneric", { [ "$basetexture" ] = "sprites/blueflare1", [ "$vertexcolor" ] = "1", [ "$vertexalpha" ] = "1", [ "$additive" ] = "1", [ "$nocull" ] = "1" } )
 
 function EFFECT:Init( data )
 
-	self.StartPos = data:GetStart()
+	self.Position = data:GetStart()
+	self.WeaponEnt = data:GetEntity()
+	self.Attachment = data:GetAttachment()
+
+	self.StartPos = self:GetTracerShootPos( self.Position, self.WeaponEnt, self.Attachment )
 	self.EndPos = data:GetOrigin()
 
-	local ent = data:GetEntity()
-	local att = data:GetAttachment()
-
-	if ( IsValid( ent ) && att > 0 ) then
-	
-		if ( ent.Owner == LocalPlayer() && !LocalPlayer():GetViewModel() != LocalPlayer() ) then ent = ent.Owner:GetViewModel() end
-	
-		local att = ent:GetAttachment( att )
-		if ( att ) then
-		
-			self.StartPos = att.Pos
-		
-		end
-	
-	end
-
-	self.Dir = self.EndPos - self.StartPos
+	self.Alpha = 255
+	self.Life = 0
 
 	self:SetRenderBoundsWS( self.StartPos, self.EndPos )
 
-	self.TracerTime = math.min( 1, self.StartPos:Distance( self.EndPos ) / 10000 )
-	self.Length = 0.4
-
-	self.DieTime = CurTime() + self.TracerTime
-
 end
-
 
 function EFFECT:Think()
 
-	return true
+	self.Life = self.Life + FrameTime() * 4
+	self.Alpha = 255 * ( 1 - self.Life )
+
+	return ( self.Life < 1 )
 
 end
 
-
 function EFFECT:Render()
 
-	local fDelta = ( self.DieTime - CurTime() ) / self.TracerTime
-	fDelta = math.Clamp( fDelta, 0, 1 ) ^ 0.5
+	if ( self.Alpha < 1 ) then return end
+
+	render.SetMaterial( self.SpriteMat )
+	render.DrawSprite( self.StartPos, 16, 16, Color( 128, 128, 255, 128 * ( 1 - self.Life ) ) )
 
 	render.SetMaterial( self.Mat )
+	local texcoord = math.Rand( 0, 1 )
 
-	local sinWave = math.sin( fDelta * math.pi )
+	local norm = ( self.StartPos - self.EndPos ) * self.Life
 
-	render.DrawBeam( self.EndPos - self.Dir * ( fDelta - sinWave * self.Length ), self.EndPos - self.Dir * ( fDelta + sinWave * self.Length ), 2 + sinWave * 16, 1, 0, Color( 200, 200, 255, 255 ) )
+	self.Length = norm:Length()
+
+	for i = 1, 3 do
+	
+		render.DrawBeam( self.StartPos, self.EndPos, 8, texcoord, texcoord +  ( ( self.StartPos - self.EndPos ):Length() / 128 ), Color( 255, 255, 255, 128 * ( 1 - self.Life ) ) )
+	
+	end
 
 end

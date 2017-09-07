@@ -4,6 +4,7 @@
 -- Create NextBot Player ConVars
 ov_sv_bot_dumb = CreateConVar( "ov_sv_bot_dumb", "0", FCVAR_NOTIFY, "Bots won't shoot anything." )
 ov_sv_bot_slower = CreateConVar( "ov_sv_bot_slower", "0", FCVAR_NOTIFY, "Bots run much more slower than normal." )
+ov_sv_bot_stop = CreateConVar( "ov_sv_bot_stop", "0", FCVAR_NOTIFY, "Bots will stop in time." )
 
 
 -- Create a NextBot Player
@@ -62,8 +63,7 @@ function BOT_PlayerSpawn( ply )
 	if ( ply:IsBot() ) then
 	
 		ply.BotPlayerAttackSpeed = 0
-		ply.BotPlayerAttackSecondary = false
-		ply.BotPlayerSkill = math.random( 16, 64 )
+		ply.BotPlayerSkill = math.random( 32, 64 )
 	
 		ply:SetAvoidPlayers( false )
 	
@@ -129,6 +129,9 @@ function BOT_StartCommand( ply, ucmd )
 	
 		ucmd:ClearButtons()
 	
+		-- Stop in time
+		if ( ov_sv_bot_stop:GetBool() ) then return end
+	
 		-- Infected inbound
 		if ( !ov_sv_bot_dumb:GetBool() && ( ply:Team() == TEAM_SURVIVOR ) ) then
 		
@@ -145,17 +148,7 @@ function BOT_StartCommand( ply, ucmd )
 					
 						if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon().Primary.Automatic || ( ply.BotPlayerAttackSpeed < CurTime() ) ) ) then
 						
-							if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() == "weapon_ov_dualpistol" ) ) then ply.BotPlayerAttackSecondary = !ply.BotPlayerAttackSecondary end
-						
-							if ( !ply.BotPlayerAttackSecondary ) then
-							
-								ucmd:SetButtons( IN_ATTACK )
-							
-							else
-							
-								ucmd:SetButtons( IN_ATTACK2 )
-							
-							end
+							ucmd:SetButtons( IN_ATTACK )
 						
 							ply.BotPlayerAttackSpeed = CurTime() + 0.25
 						
