@@ -40,8 +40,8 @@ function GM:Initialize()
 	-- Set the default deploy speed to 1
 	game.ConsoleCommand( "sv_defaultdeployspeed 1\n" )
 
-	-- Set the view rollangle to 1.5
-	game.ConsoleCommand( "sv_rollangle 1.5\n" )
+	-- Set the view rollangle to 2
+	game.ConsoleCommand( "sv_rollangle 2\n" )
 
     -- Set alltalk to 1
     game.ConsoleCommand( "sv_alltalk 1\n" )

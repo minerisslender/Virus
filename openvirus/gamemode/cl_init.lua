@@ -63,6 +63,7 @@ function GM:Initialize()
     ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
     ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
     ov_cl_hud_force_hiscale = CreateClientConVar( "ov_cl_hud_force_hiscale", "0", true, false )
+    ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
 
 	-- Display the help menu if we a missing this thing
 	if ( !file.Exists( "openvirus", "DATA" ) ) then
@@ -280,8 +281,8 @@ function GM:Think()
 		if ( infected_light ) then
 		
 			infected_light.brightness = 0.5
-			infected_light.decay = 1000
-			infected_light.dietime = CurTime() + 1
+			infected_light.decay = 10000
+			infected_light.dietime = CurTime() + 2
 			infected_light.pos = LocalPlayer():EyePos() - Vector( 0, 0, 16 )
 			infected_light.size = 128
 			infected_light.r = LocalPlayer():GetColor().r
@@ -293,15 +294,15 @@ function GM:Think()
 	end
 
 	-- Geiger Counter
-	if ( ov_cl_survivor_geigercounter:GetBool() ) then
+	if ( ov_cl_survivor_geigercounter:GetBool() && OV_Game_InRound ) then
 	
-		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() ) then
 		
-			for _, ent in pairs( ents.FindInSphere( LocalPlayer():GetPos(), 512 ) ) do
+			for _, ent in pairs( ents.FindInSphere( LocalPlayer():GetPos(), 1024 ) ) do
 			
-				if ( ent:IsValid() && ( ( ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) && ent:GetInfectionStatus() ) || ( ent:GetClass() == "ent_ov_infectedblood" ) ) && ( !ent.OV_GeigerCounterCooldown || ( ent.OV_GeigerCounterCooldown < CurTime() ) ) ) then
+				if ( ent:IsValid() && ( ent:IsPlayer() && ent:Alive() && ( ent:Team() != LocalPlayer():Team() ) ) && ( !ent.OV_GeigerCounterCooldown || ( ent.OV_GeigerCounterCooldown < CurTime() ) ) ) then
 				
-					ent.OV_GeigerCounterCooldown = CurTime() + math.Remap( ent:GetPos():Distance( LocalPlayer():GetPos() ), 0, 512, 0, 4 ) / 10
+					ent.OV_GeigerCounterCooldown = CurTime() + math.Remap( ent:GetPos():Distance( LocalPlayer():GetPos() ), 0, 1024, 0, 4 ) / 10
 				
 					if ( ent:GetPos():Distance( LocalPlayer():GetPos() ) <= 256 ) then
 					
@@ -373,7 +374,7 @@ function OV_SendTimerCount( len )
     
         OV_CountdownTimer_Text = {}
     
-        timer.Create( "OV_CountdownTimer", timer.TimeLeft( "OV_RoundTimer" ) - 6.5, 1, function()
+        timer.Create( "OV_CountdownTimer", timer.TimeLeft( "OV_RoundTimer" ) - 6.75, 1, function()
 		
             timer.Remove( "OV_CountdownTimer" )
             timer.Create( "OV_CountdownTimer", 1, 5, function()
@@ -599,7 +600,7 @@ function GM:HUDPaint()
 	-- Draw a text for WFP session
 	if ( OV_Game_WaitingForPlayers ) then
 	
-		draw.SimpleTextOutlined( "WAITING FOR PLAYERS", "DermaLarge", ScrW() / 2, ScrH() / 1.5, Color( 255, 255, 255, math.Clamp( math.sin( CurTime() * 5 ) * 255, 127.5, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, math.Clamp( math.sin( CurTime() * 5 ) * 255, 127.5, 255 ) ) )
+		draw.SimpleTextOutlined( "WAITING FOR PLAYERS", "DermaLarge", ScrW() / 2, ScrH() / 1.5, Color( 255, 255, 255, math.Remap( math.sin( CurTime() * 4 ), -1, 1, 50, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, math.Remap( math.sin( CurTime() * 4 ), -1, 1, 50, 255 ) ) )
 	
 	end
 
@@ -936,6 +937,21 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
     
     end
 
+	-- Survivor firstperson
+	if ( ov_cl_camera_bob:GetBool() && LocalPlayer():IsValid() && LocalPlayer():Alive() && LocalPlayer():IsOnGround() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+	
+		local view = {}
+		view.origin = pos
+		view.angles = Angle( ang.p + ( math.sin( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.5 ) ), ang.y, ang.r + ( math.sin( CurTime() * 6 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.75 ) ) )
+		view.fov = fov
+		view.znear = zn
+		view.zfar = zf
+		view.drawviewer = false
+	
+		return view
+	
+	end
+
 end
 hook.Add( "CalcView", "OV_CalcView", OV_CalcView )
 
@@ -1021,13 +1037,9 @@ function OV_PlayerBindPress( ply, key, pressed )
 	if ( ply:HasWeapon( "weapon_ov_adrenaline" ) && ( key == "+menu_context" ) ) then
     
         ply:ConCommand( "invwep "..ply:GetWeapon( "weapon_ov_adrenaline" ):GetClass() )
-    
-		if ( !ov_cl_hl2_wpn_selection:GetBool() ) then
-		
-			OV_WeaponSelectionName = ply:GetWeapon( "weapon_ov_adrenaline" ):GetClass()
-			OV_WeaponSelectionNameTime = CurTime() + 2
-		
-		end
+	
+		OV_WeaponSelectionName = ply:GetWeapon( "weapon_ov_adrenaline" ):GetClass()
+		OV_WeaponSelectionNameTime = CurTime() + 2
     
         surface.PlaySound( "common/wpn_hudoff.wav" )
     
@@ -1062,6 +1074,13 @@ function OV_RenderScreenspaceEffects()
 			DrawMotionBlur( 0.25, 0.75, 0.01 )
 			DrawSharpen( 1.1, 1.1 )
 			DrawToyTown( 1.1, ScrH() / 2 )
+		
+		end
+	
+		-- Preparing for the next round
+		if ( OV_Game_EndRound ) then
+		
+			DrawColorModify( { [ "$pp_colour_contrast" ] = 1, [ "$pp_colour_colour" ] = 0 } )
 		
 		end
 	
