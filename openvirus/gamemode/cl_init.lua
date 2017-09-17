@@ -64,6 +64,10 @@ function GM:Initialize()
     ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
     ov_cl_hud_force_hiscale = CreateClientConVar( "ov_cl_hud_force_hiscale", "0", true, false )
     ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
+    ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
+
+	-- ConCommands
+	concommand.Add( "ov_net_update", function() return end )
 
 	-- Display the help menu if we a missing this thing
 	if ( !file.Exists( "openvirus", "DATA" ) ) then
@@ -280,7 +284,7 @@ function GM:Think()
 		local infected_light = DynamicLight( LocalPlayer():EntIndex() )
 		if ( infected_light ) then
 		
-			infected_light.brightness = 0.5
+			infected_light.brightness = 0.75
 			infected_light.decay = 10000
 			infected_light.dietime = CurTime() + 2
 			infected_light.pos = LocalPlayer():EyePos() - Vector( 0, 0, 16 )
@@ -460,6 +464,8 @@ function OV_SetMusic( len )
 	-- 5 is infected win music
 	-- 6 is survivors win music
 
+	if ( !ov_cl_round_music:GetBool() ) then return end
+
     if ( setmusic_state <= 0 ) then
     
         for k, v in pairs( OV_Sounds_WaitingForPlayers ) do
@@ -572,7 +578,7 @@ function GM:HUDPaint()
     
         hud_scale = 1.5
     
-        if ( ( ( ScrW() >= 1920 ) && ( ScrH() >= 1080 ) ) || ov_cl_hud_force_hiscale:GetBool() ) then
+        if ( ( ( ScrW() > 1920 ) && ( ScrH() > 1080 ) ) || ov_cl_hud_force_hiscale:GetBool() ) then
         
             hud_scale = 1.75
         
@@ -618,7 +624,7 @@ function GM:HUDPaint()
     end
 
 	-- Timer
-	if ( !OV_Game_PreRound ) then
+	if ( !OV_Game_PreRound && !OV_Game_EndRound ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.DrawRect( ScrW() / 2 - 30 * hud_scale, 15, 60 * hud_scale, 36 * hud_scale )
@@ -632,7 +638,7 @@ function GM:HUDPaint()
 	end
 
 	-- Radar
-	if ( !OV_Game_PreRound ) then
+	if ( !OV_Game_PreRound && !OV_Game_EndRound ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.SetMaterial( OV_Material_Radar )
@@ -942,7 +948,7 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	
 		local view = {}
 		view.origin = pos
-		view.angles = Angle( ang.p + ( math.sin( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.5 ) ), ang.y, ang.r + ( math.sin( CurTime() * 6 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.75 ) ) )
+		view.angles = Angle( ang.p + ( math.cos( CurTime() * 7.25 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.25 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 9 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 1 ) ) )
 		view.fov = fov
 		view.znear = zn
 		view.zfar = zf
@@ -1078,9 +1084,9 @@ function OV_RenderScreenspaceEffects()
 		end
 	
 		-- Preparing for the next round
-		if ( OV_Game_EndRound ) then
+		if ( OV_Game_EndRound && timer.Exists( "OV_RoundTimer" ) ) then
 		
-			DrawColorModify( { [ "$pp_colour_contrast" ] = 1, [ "$pp_colour_colour" ] = 0 } )
+			DrawColorModify( { [ "$pp_colour_contrast" ] = 1, [ "$pp_colour_colour" ] = math.Clamp( math.Remap( timer.TimeLeft( "OV_RoundTimer" ), 0, 15, 0, 1 ), 0, 1 ) } )
 		
 		end
 	

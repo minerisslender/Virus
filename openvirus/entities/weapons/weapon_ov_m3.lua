@@ -102,6 +102,7 @@ function SWEP:Think()
     
         if ( IsFirstTimePredicted() ) then self.ReloadTime = CurTime() + 0.8 end
         self.Weapon:SendWeaponAnim( ACT_VM_RELOAD )
+        self.Owner:SetAnimation( PLAYER_RELOAD )
     
         self.Weapon:SetClip1( self.Weapon:Clip1() + 1 )
         self.Owner:RemoveAmmo( 1, self.Weapon:GetPrimaryAmmoType() )

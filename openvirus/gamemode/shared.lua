@@ -3,6 +3,7 @@
 include( "player_class/player_virus.lua" )
 include( "player_meta.lua" )
 include( "ammo.lua" )
+include( "bot.lua" )
 
 -- Custom map-specific hooking stuff
 if ( file.Exists( "openvirus/gamemode/ov_maplua/"..game.GetMap()..".lua", "LUA" ) ) then
@@ -20,7 +21,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev18 (Public Alpha)"
+GM.Version  =   "rev19 (Public Alpha)"
 
 
 -- Some global stuff here

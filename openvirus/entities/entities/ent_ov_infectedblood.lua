@@ -54,7 +54,7 @@ if ( CLIENT ) then
 	
 		-- Draw a sprite
 		render.SetMaterial( self.Material )
-		render.DrawSprite( self.Entity:GetPos(), self.SpriteSize * math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 2 ), 0, 2, 0, 1 ), self.SpriteSize * math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 2 ), 0, 2, 0, 1 ), Color( 180, 255, 0, math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 2 ), 0, 2, 0, 255 ) ) )
+		render.DrawSprite( self.Entity:GetPos(), self.SpriteSize * math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 1 ), 0, 1, 0, 1 ), self.SpriteSize * math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 1 ), 0, 1, 0, 1 ), Color( 180, 255, 0, math.Remap( math.Clamp( self.LifeTime - CurTime(), 0, 2 ), 0, 2, 0, 255 ) ) )
 	
 	end
 

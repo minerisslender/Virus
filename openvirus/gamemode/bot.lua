@@ -1,5 +1,7 @@
 -- Initialize bot stuff!
 
+if ( SERVER ) then AddCSLuaFile() end
+
 
 -- Create NextBot Player ConVars
 ov_sv_bot_dumb = CreateConVar( "ov_sv_bot_dumb", "0", FCVAR_NOTIFY, "Bots won't shoot anything." )
@@ -63,7 +65,7 @@ function BOT_PlayerSpawn( ply )
 	if ( ply:IsBot() ) then
 	
 		ply.BotPlayerAttackSpeed = 0
-		ply.BotPlayerSkill = math.random( 32, 64 )
+		ply.BotPlayerSkill = math.random( 16, 64 )
 	
 		ply:SetAvoidPlayers( false )
 	

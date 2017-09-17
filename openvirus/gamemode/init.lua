@@ -23,6 +23,9 @@ function GM:Initialize()
     OV_Game_MainRoundTimerCount = 90
 
     OV_Game_WeaponLoadout = {}
+    OV_Game_WeaponLoadout_Primary = {}
+    OV_Game_WeaponLoadout_Secondary = {}
+	OV_Game_WeaponLoadout_RemoveSelected = "UNKNOWN"
 
 	OV_Game_LastRandomChosenInfected = "STEAM_ID_PENDING"
 
@@ -40,9 +43,6 @@ function GM:Initialize()
 	-- Set the default deploy speed to 1
 	game.ConsoleCommand( "sv_defaultdeployspeed 1\n" )
 
-	-- Set the view rollangle to 2
-	game.ConsoleCommand( "sv_rollangle 2\n" )
-
     -- Set alltalk to 1
     game.ConsoleCommand( "sv_alltalk 1\n" )
 
@@ -58,6 +58,30 @@ function GM:Initialize()
 
     -- ConCommands
     concommand.Add( "invwep", function( ply, cmd, args, argstring ) if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then ply:SelectWeapon( argstring ) end end )
+	concommand.Add( "ov_net_update", function( ply )
+	
+		if ( OV_Game_InRound ) then
+		
+			net.Start( "OV_UpdateRoundStatus" )
+				net.WriteBool( OV_Game_WaitingForPlayers )
+				net.WriteBool( OV_Game_PreRound )
+				net.WriteBool( OV_Game_InRound )
+				net.WriteBool( OV_Game_EndRound )
+				net.WriteInt( OV_Game_Round, 8 )
+				net.WriteInt( OV_Game_MaxRounds, 8 )
+			net.Send( ply )
+		
+			if ( timer.Exists( "OV_RoundTimer" ) ) then
+			
+				net.Start( "OV_SendTimerCount" )
+					net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+				net.Broadcast()
+			
+			end
+		
+		end
+	
+	end )
 
 end
 
@@ -390,26 +414,44 @@ function GM:BeginPreRound()
 		"weapon_ov_adrenaline"
 	}
 
-    -- Remove some items randomly
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_dualpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_mp5" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_p90" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_pistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 2 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_silencedpistol" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 4 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
-    if ( ( #OV_Game_WeaponLoadout > 5 ) && ( math.random( 1, 3 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
+	-- List primary weapons
+	OV_Game_WeaponLoadout_Primary = {
+		"weapon_ov_pistol",
+		"weapon_ov_dualpistol",
+		"weapon_ov_laserpistol",
+		"weapon_ov_silencedpistol"
+	}
 
-	-- We do not want over 6 weapons
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_m3" ) end
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_xm1014" ) end
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserpistol" ) end
-	if ( #OV_Game_WeaponLoadout > 6 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) end
+	-- List secondary weapons
+	OV_Game_WeaponLoadout_Secondary = {
+		"weapon_ov_m3",
+		"weapon_ov_xm1014",
+		"weapon_ov_p90",
+		"weapon_ov_laserrifle",
+		"weapon_ov_mp5"
+	}
+
+	-- Remove some primary weapons
+	for removenum = 1, ( #OV_Game_WeaponLoadout_Primary - 2 ) do
+	
+		OV_Game_WeaponLoadout_RemoveSelected = table.Random( OV_Game_WeaponLoadout_Primary )
+		table.RemoveByValue( OV_Game_WeaponLoadout, OV_Game_WeaponLoadout_RemoveSelected )
+		table.RemoveByValue( OV_Game_WeaponLoadout_Primary, OV_Game_WeaponLoadout_RemoveSelected )
+	
+	end
+
+	-- Remove some secondary weapons
+	for removenum = 1, ( #OV_Game_WeaponLoadout_Secondary - math.random( 2, 3 ) ) do
+	
+		OV_Game_WeaponLoadout_RemoveSelected = table.Random( OV_Game_WeaponLoadout_Secondary )
+		table.RemoveByValue( OV_Game_WeaponLoadout, OV_Game_WeaponLoadout_RemoveSelected )
+		table.RemoveByValue( OV_Game_WeaponLoadout_Secondary, OV_Game_WeaponLoadout_RemoveSelected )
+	
+	end
+
+	-- Random special weapons
+	if ( math.random( 1, 6 ) > 1 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
+	if ( math.random( 1, 8 ) > 1 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
 
     -- Here we will clean up the map
     game.CleanUpMap()
@@ -556,7 +598,7 @@ function GM:EndMainRound()
     timer.Create( "OV_RoundTimer", 15, 1, function() GAMEMODE:BeginPreRound() end )
 
     net.Start( "OV_SendTimerCount" )
-        net.WriteInt( 0, 16 )
+        net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
     net.Broadcast()
 
     if ( team.NumPlayers( TEAM_SURVIVOR ) > 0 ) then
