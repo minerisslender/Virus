@@ -13,11 +13,12 @@ function ENT:Initialize()
 
 	self:SetModel( "models/weapons/w_slam.mdl" )
 
+	self:SetCustomCollisionCheck( true )
+
 	if ( SERVER ) then
 	
 		self:PhysicsInit( SOLID_VPHYSICS )
 		self:SetMoveType( MOVETYPE_VPHYSICS )
-		self:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 		self:CollisionRulesChanged()
 	
 		self:PhysWake()
@@ -85,7 +86,7 @@ function ENT:Think()
 		
 			for _, ent in pairs( ents.FindInSphere( self.Entity:GetPos(), 64 ) ) do
 			
-				if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) ) then
+				if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) && ent:Visible( self.Entity ) ) then
 				
 					local explosiveeffect = EffectData()
 					explosiveeffect:SetOrigin( self.Entity:GetPos() )
@@ -93,7 +94,7 @@ function ENT:Think()
 				
 					for _, ent in pairs( ents.FindInSphere( self.Entity:GetPos(), 128 ) ) do
 					
-						if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) ) then
+						if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) && ent:Visible( self.Entity ) ) then
 						
 							ent:TakeDamage( 250, self.Entity:GetOwner(), self.Entity )
 						

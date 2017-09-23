@@ -31,9 +31,6 @@ SWEP.BounceWeaponIcon = false
 SWEP.DrawWeaponInfoBox = false
 
 
-SWEP.Charge = 0
-
-
 -- Initialize the weapon
 function SWEP:Initialize()
 
@@ -45,7 +42,6 @@ end
 -- Primary attack
 function SWEP:PrimaryAttack()
 
-	if ( self.Charge > 0 ) then return end
     if ( !self:CanPrimaryAttack() ) then return end
 
     self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav", 75, 125 )
@@ -65,89 +61,6 @@ end
 function SWEP:SecondaryAttack()
 
     return
-
-end
-
-
--- Whip it out (hue)
-function SWEP:Deploy()
-
-	self.Charge = 0
-
-	return true
-
-end
-
-
--- Put it away
-function SWEP:Holster()
-
-	self.Charge = 0
-
-	return true
-
-end
-
-
--- Think
-function SWEP:Think()
-
-    if ( IsFirstTimePredicted() && self.Owner && self.Owner:IsValid() ) then
-	
-		-- Charge it up
-		if ( self.Owner:KeyDown( IN_ATTACK2 ) && ( self.Charge < 100 ) ) then
-		
-            if ( self.Charge < 1 ) then self.Weapon:EmitSound( "weapons/ar2/ar2_reload_rotate.wav", 75, 100, 0.7, CHAN_WEAPON ) end
-			if ( self.Charge >= 99 ) then self.Weapon:EmitSound( "weapons/ar2/ar2_reload_rotate.wav", 75, 150, 0.7, CHAN_WEAPON ) end
-		
-			self.Charge = self.Charge + 1
-			self.ViewModelFOV = self.ViewModelDefaultFOV - self.Charge / 5
-		
-		end
-	
-		-- Lose charge if we stop holding the button
-		if ( !self.Owner:KeyDown( IN_ATTACK2 ) && ( self.Charge > 0 ) ) then
-		
-			-- Do a thing
-			if ( self.Charge >= 100 ) then
-			
-				self.Weapon:EmitSound( "NPC_CombineBall.Explosion" )
-			
-				util.ScreenShake( self.Owner:GetPos(), 64, 64, 0.25, 128 )
-			
-				local soniceffectpos = self.Weapon:GetAttachment( 1 ).Pos
-				if ( CLIENT && !self.Owner:ShouldDrawLocalPlayer() ) then
-				
-					soniceffectpos = self.Owner:GetViewModel():GetAttachment( 1 ).Pos
-				
-				end
-			
-				local soniceffect = EffectData()
-				soniceffect:SetOrigin( soniceffectpos )
-				util.Effect( "cball_explode", soniceffect )
-			
-				local attackeyetrace = self.Owner:GetEyeTrace()
-				if ( attackeyetrace.Entity && attackeyetrace.Entity:IsValid() && attackeyetrace.Entity:IsPlayer() && attackeyetrace.Entity:Alive() && ( attackeyetrace.Entity:Team() == TEAM_INFECTED ) && ( attackeyetrace.Entity:GetPos():Distance( self.Owner:GetPos() ) <= 512 ) ) then
-				
-					attackeyetrace.Entity:SetVelocity( ( attackeyetrace.Entity:GetPos() - ( self.Owner:GetPos() - Vector( 0, 0, 4 ) ) ) * math.Remap( attackeyetrace.Entity:GetPos():Distance( self.Owner:GetPos() ), 0, 300, 64, 0 ) )
-				
-				end
-			
-			end
-		
-			self.Charge = 0
-			self.ViewModelFOV = self.ViewModelDefaultFOV
-		
-		end
-	
-		-- Stop it here
-		if ( self.Charge > 100 ) then
-		
-			self.Charge = 100
-		
-		end
-	
-	end
 
 end
 

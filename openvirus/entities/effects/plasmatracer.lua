@@ -14,6 +14,31 @@ function EFFECT:Init( data )
 	self.Alpha = 255
 	self.Life = 0
 
+	self.Data = data
+	self.ParticleEmitter = ParticleEmitter( self.Data:GetOrigin(), false )
+	for pnum = 1, 10 do
+	
+		self.Particle = self.ParticleEmitter:Add( "sprites/plasmaember", self.Data:GetOrigin() )
+
+		if ( self.Particle ) then
+		
+			self.Particle:SetAngles( Angle( 0, 0, 0 ) )
+			self.Particle:SetVelocity( Vector( math.random( -80, 80 ), math.random( -80, 80 ), math.random( -80, 80 ) ) )
+			self.Particle:SetGravity( Vector( 0, 0, GetConVar( "sv_gravity" ):GetFloat() * -1 ) )
+			self.Particle:SetColor( 255, 255, 255 )
+			self.Particle:SetLifeTime( 0 )
+			self.Particle:SetDieTime( 0.5 )
+			self.Particle:SetStartAlpha( 255 )
+			self.Particle:SetEndAlpha( 0 )
+			self.Particle:SetStartSize( 4 )
+			self.Particle:SetEndSize( 0 )
+			self.Particle:SetLighting( false )
+		
+		end
+	
+	end
+	self.ParticleEmitter:Finish()
+
 	self:SetRenderBoundsWS( self.StartPos, self.EndPos )
 
 end
@@ -43,7 +68,7 @@ function EFFECT:Render()
 
 	for i = 1, 3 do
 	
-		render.DrawBeam( self.StartPos - norm, self.EndPos, 8, texcoord, texcoord + self.Length / 128, Color( 255, 255, 255 ) )
+		render.DrawBeam( self.StartPos - norm, self.EndPos, 8, texcoord, texcoord + ( self.Length / 128 ), Color( 255, 255, 255 ) )
 	
 	end
 

@@ -64,8 +64,13 @@ function BOT_PlayerSpawn( ply )
 
 	if ( ply:IsBot() ) then
 	
-		ply.BotPlayerAttackSpeed = 0
+		ply.BotPlayerAttackSpeed = CurTime()
 		ply.BotPlayerSkill = math.random( 16, 64 )
+		timer.Simple( 0.1, function() if ( ply && ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && ( #ply:GetWeapons() > 0 ) ) then ply.BotPlayerPreferredWeapon = table.Random( ply:GetWeapons() ) end end )
+		ply.BotPlayerUseSLAM = tobool( math.random( 0, 1 ) )
+		ply.BotPlayerUseSLAMTime = CurTime() + math.random( 4, 12 )
+		ply.BotPlayerUsesAdrenaline = tobool( math.random( 0, 1 ) )
+		ply.BotPlayerUseAdrenalineTime = CurTime()
 	
 		ply:SetAvoidPlayers( false )
 	
@@ -134,6 +139,38 @@ function BOT_StartCommand( ply, ucmd )
 		-- Stop in time
 		if ( ov_sv_bot_stop:GetBool() ) then return end
 	
+		-- Bot uses Adrenaline
+		if ( !ov_sv_bot_dumb:GetBool() && OV_Game_InRound && ( ply:Team() == TEAM_SURVIVOR ) && ply.BotPlayerUsesAdrenaline && ply:HasWeapon( "weapon_ov_adrenaline" ) ) then
+		
+			if ( timer.Exists( "OV_RoundTimer" ) && ( timer.TimeLeft( "OV_RoundTimer" ) <= 20 ) && ( ply.BotPlayerUseAdrenalineTime < CurTime() ) ) then
+			
+				ply:SelectWeapon( "weapon_ov_adrenaline" )
+				ucmd:SetButtons( IN_ATTACK )
+			
+				ply.BotPlayerUseAdrenalineTime = CurTime() + 0.1
+			
+			end
+		
+			if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() == "weapon_ov_adrenaline" ) ) then return end
+		
+		end
+	
+		-- Bot uses SLAM
+		if ( !ov_sv_bot_dumb:GetBool() && ( ply:Team() == TEAM_SURVIVOR ) && ply.BotPlayerUseSLAM && ply:HasWeapon( "weapon_ov_slam" ) ) then
+		
+			if ( ply.BotPlayerUseSLAMTime < CurTime() ) then
+			
+				ply:SelectWeapon( "weapon_ov_slam" )
+				ucmd:SetButtons( IN_ATTACK )
+			
+				ply.BotPlayerUseSLAMTime = CurTime() + 0.5
+			
+			end
+		
+			if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() == "weapon_ov_slam" ) ) then return end
+		
+		end
+	
 		-- Infected inbound
 		if ( !ov_sv_bot_dumb:GetBool() && ( ply:Team() == TEAM_SURVIVOR ) ) then
 		
@@ -164,24 +201,33 @@ function BOT_StartCommand( ply, ucmd )
 		
 		end
 	
-		-- Switch weapons
+		-- Switch preferred weapons
 		if ( ply:Team() == TEAM_SURVIVOR ) then
 		
-			if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() ) then
+			if ( ply.BotPlayerPreferredWeapon && ply.BotPlayerPreferredWeapon:IsValid() ) then
 			
-				if ( ( ply:GetActiveWeapon():Clip1() <= 0 ) && ( ply:GetActiveWeapon():Ammo1() <= 0 ) ) then
+				if ( ( ply.BotPlayerPreferredWeapon:Clip1() <= 0 ) && ( ply.BotPlayerPreferredWeapon:Ammo1() <= 0 ) ) then
 				
-					for _, weapon in pairs( ply:GetWeapons() ) do
+					ply.BotPlayerPreferredWeapon = table.Random( ply:GetWeapons() )
+				
+					if ( ply.BotPlayerPreferredWeapon:GetClass() == "weapon_ov_adrenaline" ) then
 					
-						if ( weapon:IsValid() && ( ( weapon:Clip1() > 0 ) || ( weapon:Ammo1() > 0 ) ) ) then
-						
-							ply:SelectWeapon( weapon:GetClass() )
-						
-						end
+						ply.BotPlayerPreferredWeapon = nil
 					
 					end
 				
 				end
+			
+			end
+		
+		end
+	
+		-- Switch to preferred weapon
+		if ( ply:Team() == TEAM_SURVIVOR ) then
+		
+			if ( ply.BotPlayerPreferredWeapon && ply.BotPlayerPreferredWeapon:IsValid() && ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon() != ply.BotPlayerPreferredWeapon ) ) then
+			
+				ply:SelectWeapon( ply.BotPlayerPreferredWeapon:GetClass() )
 			
 			end
 		
@@ -207,8 +253,8 @@ function BOT_StartCommand( ply, ucmd )
 		
 			ucmd:SetViewAngles( ( ply.BotPlayerNav:GetPos() - ply:GetPos() ):Angle() )
 		
-			-- Since NextBots do not angle themselves with SetViewAngles we need this for the Infected one
-			if ( ply:Team() == TEAM_INFECTED ) then ply:SetEyeAngles( ( ply.BotPlayerNav:GetPos() - ply:GetPos() ):Angle() ) end
+			-- Since NextBots do not angle themselves with SetViewAngles
+			if ( OV_Game_PreRound || ( ply:Team() == TEAM_INFECTED ) ) then ply:SetEyeAngles( ( ply.BotPlayerNav:GetPos() - ply:GetPos() ):Angle() ) end
 		
 			ucmd:SetForwardMove( ply:GetWalkSpeed() )
 		

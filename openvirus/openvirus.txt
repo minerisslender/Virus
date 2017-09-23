@@ -69,5 +69,14 @@
 			"type"	"CheckBox"
 			"default"	"1"
 		}
+	
+		8
+		{
+			"name"	"ov_sv_enable_player_radar"
+			"text"	"[GAME] Enable Radar"
+			"help"	"Players can see the radar."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
 	}
 }

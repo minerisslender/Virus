@@ -92,6 +92,7 @@ local PLAYER_LINE = {
 
 		if ( self.NumPing == nil || self.NumPing != self.Player:Ping() ) then
 			self.NumPing = self.Player:Ping()
+			if ( self.Player:EntIndex() == 1 ) then self.NumPing = "SRV" end
 			if ( self.Player:IsBot() ) then self.NumPing = "BOT" end
 			self.Ping:SetText( self.NumPing )
 		end

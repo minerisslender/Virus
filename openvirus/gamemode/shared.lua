@@ -3,7 +3,6 @@
 include( "player_class/player_virus.lua" )
 include( "player_meta.lua" )
 include( "ammo.lua" )
-include( "bot.lua" )
 
 -- Custom map-specific hooking stuff
 if ( file.Exists( "openvirus/gamemode/ov_maplua/"..game.GetMap()..".lua", "LUA" ) ) then
@@ -21,7 +20,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev19 (Public Alpha)"
+GM.Version  =   "rev20 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -37,21 +36,28 @@ GM.OV_Infected_Model = "models/player/corpse1.mdl"
 -- Should the player take damage
 function GM:PlayerShouldTakeDamage( ply, attacker )
 
-    -- Block damaging players
-    if ( ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && attacker:IsValid() && ( attacker:GetClass() != "trigger_hurt" ) ) then
-    
-        return false
-    
-    end
-
-	-- One infected player cannot be damaged in non infection mode
-	if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ply:IsValid() && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 2 ) && !ply:GetInfectionStatus() ) then
+	-- Block damaging players
+	if ( ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && attacker:IsValid() && ( attacker:GetClass() != "trigger_hurt" ) ) then
 	
 		return false
 	
 	end
 
-    return true
+	-- Players cannot kill teammates
+	if ( ply:IsValid() && attacker:IsValid() && attacker:IsPlayer() && ( ply:Team() == attacker:Team() ) ) then
+	
+		return false
+	
+	end
+
+	-- One infected player cannot be damaged in non infection mode
+	if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ply:IsValid() && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 1 ) && !ply:GetInfectionStatus() ) then
+	
+		return false
+	
+	end
+
+	return true
 
 end
 
@@ -64,6 +70,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 	if ( attacker:IsPlayer() && attacker:IsBot() ) then
 	
 		info:ScaleDamage( 0.5 )
+		return
 	
 	end
 
@@ -92,17 +99,17 @@ end
 -- Create our teams here
 function GM:CreateTeams()
 
-    TEAM_SPECTATOR = 0
-    team.SetUp( TEAM_SPECTATOR, "Spectator", Color( 0, 0, 0 ) )
-    team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	TEAM_SPECTATOR = 0
+	team.SetUp( TEAM_SPECTATOR, "Spectator", Color( 0, 0, 0 ) )
+	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
 
-    TEAM_SURVIVOR = 1
-    team.SetUp( TEAM_SURVIVOR, "Survivor", Color( 255, 255, 255 ) )
-    team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	TEAM_SURVIVOR = 1
+	team.SetUp( TEAM_SURVIVOR, "Survivor", Color( 255, 255, 255 ) )
+	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
 
-    TEAM_INFECTED = 2
-    team.SetUp( TEAM_INFECTED, "Infected", Color( 0, 255, 0 ) )
-    team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	TEAM_INFECTED = 2
+	team.SetUp( TEAM_INFECTED, "Infected", Color( 0, 255, 0 ) )
+	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
 
 end
 
@@ -117,8 +124,8 @@ function GM:ShouldCollide( ent1, ent2 )
 	
 	end
 
-	-- Infected blood should not collide with people
-	if ( ( ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ent2:IsValid() && ( ent2:GetClass() == "ent_ov_infectedblood" ) ) || ( ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ent1:IsValid() && ( ent1:GetClass() == "ent_ov_infectedblood" ) ) ) then
+	-- SLAMs should not collide with players
+	if ( ( ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ent2:IsValid() && ( ent2:GetClass() == "ent_ov_slam" ) ) || ( ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ent1:IsValid() && ( ent1:GetClass() == "ent_ov_slam" ) ) ) then
 	
 		return false
 	
@@ -139,17 +146,17 @@ end
 -- This is used to prevent certain move commands from working
 function GM:StartCommand( ply, ucmd )
 
-    local blocked_keys = { IN_JUMP, IN_DUCK, IN_SPEED, IN_WALK, IN_ZOOM }
+	local blocked_keys = { IN_JUMP, IN_DUCK, IN_SPEED, IN_WALK, IN_ZOOM }
 
-    -- Block the keys
-    for k, v in pairs( blocked_keys ) do
-    
-        if ( ucmd:KeyDown( v ) ) then
-        
-            ucmd:RemoveKey( v )
-        
-        end
-    
-    end
+	-- Block the keys
+	for k, v in pairs( blocked_keys ) do
+	
+		if ( ucmd:KeyDown( v ) ) then
+		
+			ucmd:RemoveKey( v )
+		
+		end
+	
+	end
 
 end
