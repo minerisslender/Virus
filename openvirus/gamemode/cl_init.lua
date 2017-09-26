@@ -15,7 +15,6 @@ function GM:Initialize()
 	OV_InformationText = {}
 	OV_CountdownText = {}
 	OV_DamageValues = {}
-	OV_WeaponSelectionTable = {}
 	OV_WeaponSelectionName = ""
 	OV_WeaponSelectionNameTime = 0
 
@@ -28,9 +27,15 @@ function GM:Initialize()
 
 	OV_Game_Radar_Enabled = true
 
+	-- Global HUD Scale
+	OV_HUD_Scale = math.Clamp( ScrH() * 0.00155, 1, 2 )
+
 	-- Radar player point
 	OV_Material_Radar = Material( "openvirus/radar.vmt" )
 	OV_Material_RadarPoint = Material( "openvirus/radar_point.vmt" )
+
+	-- Player spawn effect material
+	OV_Material_SpawnEffectMaterial = CreateMaterial( "spawneffectmat", "UnlitGeneric", { [ "$basetexture" ] = "effects/blueblackflash", [ "$vertexcolor" ] = "1", [ "$vertexalpha" ] = "1", [ "$additive" ] = "1", [ "$nocull" ] = "1" } )
 
 	-- Create this for the infected flame
 	OV_Material_InfectedFlameFrameUpdate = 0
@@ -59,7 +64,6 @@ function GM:Initialize()
 	ov_cl_screenspace_effects = CreateClientConVar( "ov_cl_screenspace_effects", "1", true, false )
 	ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
 	ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
-	ov_cl_hud_force_hiscale = CreateClientConVar( "ov_cl_hud_force_hiscale", "0", true, false )
 	ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
 	ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
 	ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
@@ -282,10 +286,10 @@ function GM:Think()
 		local infected_light = DynamicLight( LocalPlayer():EntIndex() )
 		if ( infected_light ) then
 		
-			infected_light.brightness = 0.75
-			infected_light.decay = 10000
+			infected_light.brightness = 1
+			infected_light.decay = 500
 			infected_light.dietime = CurTime() + 2
-			infected_light.pos = LocalPlayer():EyePos() - Vector( 0, 0, 16 )
+			infected_light.pos = LocalPlayer():GetBonePosition( LocalPlayer():LookupBone( "ValveBiped.Bip01_Spine2" ) )
 			infected_light.size = 128
 			infected_light.r = LocalPlayer():GetColor().r
 			infected_light.g = LocalPlayer():GetColor().g
@@ -435,20 +439,6 @@ end
 net.Receive( "OV_SendDamageValue", OV_SendDamageValue )
 
 
--- Do spawn effect stuff
-function OV_DoSpawnEffect( len )
-
-	local setup_spawneffect = {}
-	setup_spawneffect.pos = net.ReadVector()
-	setup_spawneffect.color = net.ReadColor()
-	setup_spawneffect.time = CurTime() + 1
-
-	table.insert( OV_Material_SpawnEffectTable, setup_spawneffect )
-
-end
-net.Receive( "OV_DoSpawnEffect", OV_DoSpawnEffect )
-
-
 -- Play or stop music
 function OV_SetMusic( len )
 
@@ -571,27 +561,6 @@ function GM:HUDPaint()
 	-- The HUD stuff is not final and will possibly be changed in the future
 	-- ///
 
-	-- Resolution Scale
-	local hud_scale = 1
-
-	if ( ( ScrW() > 800 ) && ( ScrH() > 600 ) ) then
-	
-		hud_scale = 1.5
-	
-		if ( ( ( ScrW() > 1920 ) && ( ScrH() > 1080 ) ) || ov_cl_hud_force_hiscale:GetBool() ) then
-		
-			hud_scale = 1.75
-		
-		end
-	
-		if ( ov_cl_hud_force_hiscale:GetBool() && ( ov_cl_hud_force_hiscale:GetFloat() > 1.75 ) ) then
-		
-			hud_scale = ov_cl_hud_force_hiscale:GetFloat()
-		
-		end
-	
-	end
-
 	-- Colour depending on team
 	local hud_color = Color( 0, 0, 100 )
 	if ( LocalPlayer():Team() == TEAM_INFECTED ) then
@@ -627,13 +596,13 @@ function GM:HUDPaint()
 	if ( !OV_Game_PreRound && !OV_Game_EndRound ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
-		surface.DrawRect( ScrW() / 2 - 30 * hud_scale, 15, 60 * hud_scale, 36 * hud_scale )
-		draw.SimpleTextOutlined( "TIME LEFT", "DermaDefaultBold", ScrW() / 2, 15 * hud_scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
+		surface.DrawRect( ScrW() / 2 - 30 * OV_HUD_Scale, 15, 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
+		draw.SimpleTextOutlined( "TIME LEFT", "DermaDefaultBold", ScrW() / 2, 15 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
 	
 		local hud_timercount = 0
 		if ( timer.Exists( "OV_RoundTimer" ) ) then hud_timercount = math.Round( timer.TimeLeft( "OV_RoundTimer" ) ) end
 	
-		draw.SimpleTextOutlined( tostring( hud_timercount ), "CloseCaption_Bold", ScrW() / 2, 26 * hud_scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
+		draw.SimpleTextOutlined( tostring( hud_timercount ), "CloseCaption_Bold", ScrW() / 2, 26 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
 	
 	end
 
@@ -642,7 +611,7 @@ function GM:HUDPaint()
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.SetMaterial( OV_Material_Radar )
-		surface.DrawTexturedRect( 15, 15, 128 * math.Clamp( math.Round( hud_scale - 0.01 ), 1, 2 ), 128 * math.Clamp( math.Round( hud_scale - 0.01 ), 1, 2 ) )
+		surface.DrawTexturedRect( 15, 15, 128 * OV_HUD_Scale, 128 * OV_HUD_Scale )
 	
 		for _, ply in pairs( player.GetAll() ) do
 		
@@ -655,7 +624,7 @@ function GM:HUDPaint()
 				if ( x_diff == 0 ) then x_diff = 0.00001 end
 				if ( y_diff == 0 ) then y_diff = 0.00001 end
 			
-				local iRadarRadius = 128 * math.Clamp( math.Round( hud_scale - 0.01 ), 1, 2 )
+				local iRadarRadius = ( 128 * OV_HUD_Scale ) + 31 - ( 6 * OV_HUD_Scale )
 			
 				local fScale = ( iRadarRadius / 2.56 ) / 1024
 			
@@ -688,8 +657,8 @@ function GM:HUDPaint()
 				local xnew_diff = x_diff * math.cos( flOffset ) - y_diff * math.sin( flOffset )
 				local ynew_diff = x_diff * math.sin( flOffset ) + y_diff * math.cos( flOffset )
 			
-				xnew_diff = ( xnew_diff * fScale ) + 13
-				ynew_diff = ( ynew_diff * fScale ) + 13
+				xnew_diff = ( xnew_diff * fScale )
+				ynew_diff = ( ynew_diff * fScale )
 			
 				-- Draw the radar here
 				local dot_color = Color( 255, 255, 255 )
@@ -699,9 +668,9 @@ function GM:HUDPaint()
 				
 				end
 			
-				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( LocalPlayer():GetPos():Distance( ply:GetPos() ), 256, 1024, 200, 0 ) )
+				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( LocalPlayer():GetPos():Distance( ply:GetPos() ), 0, 1024, 200, 0 ) )
 				surface.SetMaterial( OV_Material_RadarPoint )
-				surface.DrawTexturedRect( ( iRadarRadius / 2 ) + xnew_diff, ( iRadarRadius / 2 ) + ynew_diff , 4 * math.Clamp( math.Round( hud_scale - 0.01 ), 1, 2 ), 4 * math.Clamp( math.Round( hud_scale - 0.01 ), 1, 2 ) )
+				surface.DrawTexturedRect( ( iRadarRadius / 2 ) + xnew_diff, ( iRadarRadius / 2 ) + ynew_diff, 6 * OV_HUD_Scale, 6 * OV_HUD_Scale )
 			
 			end
 		
@@ -934,7 +903,7 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	
 		local view = {}
 		view.origin = pos
-		view.angles = Angle( ang.p + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.3 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 1 ) ) )
+		view.angles = Angle( ang.p + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.2 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.9 ) ) )
 		view.fov = fov
 		view.znear = zn
 		view.zfar = zf

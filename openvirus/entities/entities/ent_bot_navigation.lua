@@ -16,6 +16,7 @@ function ENT:Initialize()
 
 	self:SetModel( "models/player/kleiner.mdl" )
 	self:SetCustomCollisionCheck( true )
+	self:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
 	self:CollisionRulesChanged()
 
 	self:SetNoDraw( true )

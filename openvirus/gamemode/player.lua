@@ -108,6 +108,9 @@ function GM:PlayerInitialSpawn( ply )
 	-- player_manager initialize
 	player_manager.SetPlayerClass( ply, "player_virus" )
 
+	-- Time survived stuff
+	ply:SetNWFloat( "OV_TimeSurvived", 0 )
+
 	-- Select these teams at initial spawn
 	if ( OV_Game_WaitingForPlayers || OV_Game_PreRound ) then
 	

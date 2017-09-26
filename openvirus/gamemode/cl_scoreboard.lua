@@ -40,7 +40,7 @@ local PLAYER_LINE = {
 
 		self.Ping = self:Add( "DLabel" )
 		self.Ping:Dock( RIGHT )
-		self.Ping:SetWidth( 50 )
+		self.Ping:SetWidth( 60 )
 		self.Ping:SetFont( "ScoreboardDefault" )
 		self.Ping:SetTextColor( Color( 255, 255, 255 ) )
 		self.Ping:SetContentAlignment( 5 )
@@ -51,6 +51,13 @@ local PLAYER_LINE = {
 		self.Kills:SetFont( "ScoreboardDefault" )
 		self.Kills:SetTextColor( Color( 255, 255, 255 ) )
 		self.Kills:SetContentAlignment( 5 )
+
+		self.Time = self:Add( "DLabel" )
+		self.Time:Dock( RIGHT )
+		self.Time:SetWidth( 70 )
+		self.Time:SetFont( "ScoreboardDefault" )
+		self.Time:SetTextColor( Color( 255, 255, 255 ) )
+		self.Time:SetContentAlignment( 5 )
 
 		self:Dock( TOP )
 		self:DockPadding( 3, 3, 3, 3 )
@@ -92,9 +99,15 @@ local PLAYER_LINE = {
 
 		if ( self.NumPing == nil || self.NumPing != self.Player:Ping() ) then
 			self.NumPing = self.Player:Ping()
-			if ( self.Player:EntIndex() == 1 ) then self.NumPing = "SRV" end
+			if ( self.Player:EntIndex() == 1 ) then self.NumPing = "HOST" end
 			if ( self.Player:IsBot() ) then self.NumPing = "BOT" end
 			self.Ping:SetText( self.NumPing )
+		end
+
+		if ( self.STime == nil || self.STime != math.Round( self.Player:GetNWFloat( "OV_TimeSurvived", 0 ), 2 ) ) then
+			self.STime = math.Round( self.Player:GetNWFloat( "OV_TimeSurvived", 0 ), 2 )
+			if ( self.STime <= 0 ) then self.STime = "-----" end
+			self.Time:SetText( self.STime )
 		end
 
 		--

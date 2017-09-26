@@ -47,7 +47,7 @@ function SWEP:PrimaryAttack()
 	if ( self.DeployTime >= CurTime() ) then return end
 	if ( self.Used ) then return end
 
-    self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
 	if ( IsFirstTimePredicted() ) then self.RemoveTime = CurTime() + 0.5 end
 	self.Used = true
@@ -58,7 +58,7 @@ end
 -- Secondary attack
 function SWEP:SecondaryAttack()
 
-    return
+	return
 
 end
 
@@ -136,6 +136,8 @@ if ( CLIENT ) then
 
 	-- Draw the weapon selection box
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
+	
+		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
 	
 		surface.SetFont( "CSTRIKETypeDeath" )
 		surface.SetTextColor( 255, 255, 255, a )

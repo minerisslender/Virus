@@ -39,7 +39,7 @@ SWEP.RemoveTime = 0
 function SWEP:Initialize()
 
     self:SetHoldType( "melee" )
-	self:SetDeploySpeed( 8 )
+	self:SetDeploySpeed( 10 )
 
 end
 
@@ -108,7 +108,7 @@ function SWEP:Think()
 			self.SLAMEnt:SetOwner( self.Owner )
 			self.SLAMEnt:Spawn()
 			self.SLAMEnt:Activate()
-			self.SLAMEnt:GetPhysicsObject():SetVelocity( self.Owner:GetAimVector() * 256 )
+			self.SLAMEnt:GetPhysicsObject():SetVelocity( self.Owner:GetAimVector() * 400 )
 		
 			self.SLAMEnt:EmitSound( "Weapon_SLAM.SatchelThrow" )
 		
@@ -125,6 +125,8 @@ if ( CLIENT ) then
 
 	-- Draw the weapon selection box
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
+	
+		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
 	
 		surface.SetFont( "HL2MPTypeDeath" )
 		surface.SetTextColor( 255, 255, 255, a )

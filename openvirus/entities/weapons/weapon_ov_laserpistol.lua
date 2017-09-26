@@ -8,8 +8,8 @@ SWEP.ViewModelFlip = false
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 
-SWEP.Primary.ClipSize = 10
-SWEP.Primary.DefaultClip = 10
+SWEP.Primary.ClipSize = 12
+SWEP.Primary.DefaultClip = 12
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "OV_LazerPistol"
 
@@ -33,7 +33,7 @@ SWEP.DrawWeaponInfoBox = false
 -- Initialize the weapon
 function SWEP:Initialize()
 
-    self:SetHoldType( "pistol" )
+	self:SetHoldType( "pistol" )
 
 end
 
@@ -41,17 +41,17 @@ end
 -- Primary attack
 function SWEP:PrimaryAttack()
 
-    if ( !self:CanPrimaryAttack() ) then return end
+	if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav" )
+	self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav" )
 
-    self:ShootBullet( 20, 1, 0.015 )
+	self:ShootBullet( 19, 1, 0.005 )
 
-    self:TakePrimaryAmmo( 1 )
+	self:TakePrimaryAmmo( 1 )
 
-    self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
+	self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
 
-    self:SetNextPrimaryFire( CurTime() + 0.1 )
+	self:SetNextPrimaryFire( CurTime() + 0.1 )
 
 end
 
@@ -59,7 +59,7 @@ end
 -- Secondary attack
 function SWEP:SecondaryAttack()
 
-    return
+	return
 
 end
 
@@ -76,7 +76,8 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 	bullet.TracerName = "lasertracer"
 	bullet.Force	= 1
 	bullet.Damage	= damage
-	bullet.AmmoType = "Pistol"
+	bullet.AmmoType = "OV_LazerPistol"
+	bullet.Callback = function( attacker, trace, info ) self:ShootFirstRicochet( attacker, trace, info ) end
 
 	self.Owner:FireBullets( bullet )
 
@@ -85,10 +86,51 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 end
 
 
+-- First ricochet
+function SWEP:ShootFirstRicochet( attacker, trace, info )
+
+	local bullet = {}
+	bullet.Num 		= 1
+	bullet.Src 		= trace.HitPos
+	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.6 )
+	bullet.Spread 	= Vector( 0, 0, 0 )
+	bullet.Tracer	= 1
+	bullet.TracerName = "laserricotracer"
+	bullet.Force	= 1
+	bullet.Damage	= info:GetDamage()
+	bullet.AmmoType = "OV_LazerPistol"
+	bullet.Callback = function( attacker, trace, info ) self:ShootLastRicochet( attacker, trace, info ) end
+
+	attacker:FireBullets( bullet )
+
+end
+
+
+-- Last ricochet
+function SWEP:ShootLastRicochet( attacker, trace, info )
+
+	local bullet = {}
+	bullet.Num 		= 1
+	bullet.Src 		= trace.HitPos
+	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.6 )
+	bullet.Spread 	= Vector( 0, 0, 0 )
+	bullet.Tracer	= 1
+	bullet.TracerName = "laserricotracer"
+	bullet.Force	= 1
+	bullet.Damage	= info:GetDamage()
+	bullet.AmmoType = "OV_LazerPistol"
+
+	attacker:FireBullets( bullet )
+
+end
+
+
 if ( CLIENT ) then
 
 	-- Draw the weapon selection box
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
+	
+		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
 	
 		surface.SetFont( "HL2MPTypeDeath" )
 		surface.SetTextColor( 255, 255, 255, a )

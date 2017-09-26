@@ -36,7 +36,6 @@ function GM:Initialize()
 	util.AddNetworkString( "OV_SendDamageValue" )
 	util.AddNetworkString( "OV_ClientsideInfect" )
 	util.AddNetworkString( "OV_SendInfoText" )
-	util.AddNetworkString( "OV_DoSpawnEffect" )
 	util.AddNetworkString( "OV_SetMusic" )
 	util.AddNetworkString( "OV_CStrikeValidation" )
 	util.AddNetworkString( "OV_ClientInitializedMusic" )
@@ -368,6 +367,9 @@ end
 -- 4 players or over this should begin
 function GM:BeginWaitingSession()
 
+	-- Stop the music
+	OV_SetMusic( 0 )
+
 	net.Start( "OV_UpdateRoundStatus" )
 		net.WriteBool( OV_Game_WaitingForPlayers )
 		net.WriteBool( OV_Game_PreRound )
@@ -500,6 +502,7 @@ function GM:BeginPreRound()
 		ply:SetEnragedStatus( 0 )
 		ply:SetInfectionStatus( 0 )
 		ply:SetAdrenalineStatus( 0 )
+		ply:SetNWFloat( "OV_TimeSurvived", 0 )
 	
 		ply:SetFrags( 0 )
 		ply:SetDeaths( 0 )
@@ -667,7 +670,7 @@ function GM:EndMainRound()
 end
 
 
--- During this phase we check for 4 players until we continue
+-- During this phase we check for players until we continue
 function OV_Game_WaitingForPlayers_GetPlayerCount()
 
 	-- At 4 players or over we should start

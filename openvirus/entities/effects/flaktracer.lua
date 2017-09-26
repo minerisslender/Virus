@@ -29,11 +29,11 @@ function EFFECT:Init( data )
 
 	self:SetRenderBoundsWS( self.StartPos, self.EndPos )
 
-	self.TracerTime = math.min( 1, self.StartPos:Distance( self.EndPos ) / 1000 )
-	self.Length = 0.5
+	self.TracerTime = math.min( 1, self.StartPos:Distance( self.EndPos ) / 5000 )
+	self.Length = 0.15
 
 	self.DieTime = CurTime() + self.TracerTime
-	self.SpriteLifeTime = CurTime() + 0.25
+	self.SpriteLifeTime = CurTime() + 0.2
 
 end
 
@@ -54,6 +54,13 @@ function EFFECT:Render()
 	
 		render.SetMaterial( self.SpriteMat )
 		render.DrawSprite( self.StartPos, 64, 64, Color( 255, 200, 0, 200 ) )
+	
+	end
+
+	if ( self.DieTime >= CurTime() ) then
+	
+		render.SetMaterial( self.SpriteMat )
+		render.DrawSprite( self.EndPos, 32, 32, Color( 255, 200, 0, 200 ) )
 	
 	end
 

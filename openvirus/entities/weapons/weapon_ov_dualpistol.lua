@@ -34,7 +34,7 @@ SWEP.CSMuzzleFlashes = true
 -- Initialize the weapon
 function SWEP:Initialize()
 
-    self:SetHoldType( "duel" )
+	self:SetHoldType( "duel" )
 
 end
 
@@ -44,23 +44,23 @@ function SWEP:PrimaryAttack()
 
 	if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "Weapon_Elite.Single" )
+	self.Weapon:EmitSound( "Weapon_Elite.Single" )
 
-    self:ShootBullet( 15, 1, 0.045 )
+	self:ShootBullet( 15, 1, 0.045 )
 
-    if ( self.Primary.FireSecondary ) then
-    
-        self.Weapon:SendWeaponAnim( ACT_VM_SECONDARYATTACK )
-    
-    end
+	if ( self.Primary.FireSecondary ) then
+	
+		self.Weapon:SendWeaponAnim( ACT_VM_SECONDARYATTACK )
+	
+	end
 
-    self.Primary.FireSecondary = !self.Primary.FireSecondary
+	if ( IsFirstTimePredicted() ) then self.Primary.FireSecondary = !self.Primary.FireSecondary end
 
-    self:TakePrimaryAmmo( 1 )
+	self:TakePrimaryAmmo( 1 )
 
-    self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
+	self.Owner:ViewPunch( Angle( -1, 0, 0 ) )
 
-    self:SetNextPrimaryFire( CurTime() + 0.125 )
+	self:SetNextPrimaryFire( CurTime() + 0.125 )
 
 end
 
@@ -68,7 +68,7 @@ end
 -- Secondary attack
 function SWEP:SecondaryAttack()
 
-    return
+	return
 
 end
 
@@ -77,6 +77,8 @@ if ( CLIENT ) then
 
 	-- Draw the weapon selection box
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
+	
+		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
 	
 		surface.SetFont( "CSTRIKETypeDeath" )
 		surface.SetTextColor( 255, 255, 255, a )

@@ -15,7 +15,6 @@ function meta:InfectPlayer( ply )
 	self:SetFOV( 0, 0 )
 	self:SetHealth( GAMEMODE.OV_Infected_Health )
 	self:SetTeam( TEAM_INFECTED )
-	self:SetFrags( 0 )
 	self:SetDeaths( 0 )
 	self:SetBloodColor( DONT_BLEED )
 	if ( SERVER && self:FlashlightIsOn() ) then self:Flashlight( false ) end
@@ -48,6 +47,13 @@ function meta:InfectPlayer( ply )
 	-- Give the player who infected this player a point
 	if ( ply && ply:IsValid() && ply:IsPlayer() ) then ply:AddFrags( 1 ) end
 
+	-- Set a time survived
+	if ( ply && ply:IsValid() && ply:IsPlayer() && timer.Exists( "OV_RoundTimer" ) ) then
+	
+		self:SetNWFloat( "OV_TimeSurvived", OV_Game_MainRoundTimerCount - timer.TimeLeft( "OV_RoundTimer" ) )
+	
+	end
+
 	-- Call the round to end if no survivors
 	if ( team.NumPlayers( TEAM_SURVIVOR ) < 1 ) then
 	
@@ -71,7 +77,7 @@ function meta:SetInfectionStatus( bool )
 		self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 110 )
 	
 		-- Start enraged mode here
-		if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 1 ) ) then
+		if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ( self:Team() == TEAM_INFECTED ) && ( ( self:Deaths() > 2 ) || timer.Exists( "OV_RoundTimer" ) && ( timer.TimeLeft( "OV_RoundTimer" ) <= ( OV_Game_MainRoundTimerCount * 0.75 ) ) ) ) then
 		
 			self:SetEnragedStatus( 1 )
 		

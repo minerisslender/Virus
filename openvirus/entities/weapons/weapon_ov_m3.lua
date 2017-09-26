@@ -117,6 +117,8 @@ if ( CLIENT ) then
 	-- Draw the weapon selection box
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
+        draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
+    
 		surface.SetFont( "CSTRIKETypeDeath" )
 		surface.SetTextColor( 255, 255, 255, a )
 		surface.SetTextPos( x + ( w / 3.25 ), y + ( h / 2.25 ) )
