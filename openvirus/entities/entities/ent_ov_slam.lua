@@ -92,11 +92,11 @@ function ENT:Think()
 					explosiveeffect:SetOrigin( self.Entity:GetPos() )
 					util.Effect( "Explosion", explosiveeffect )
 				
-					for _, ent in pairs( ents.FindInSphere( self.Entity:GetPos(), 128 ) ) do
+					for _, ent in pairs( ents.FindInSphere( self.Entity:GetPos(), 150 ) ) do
 					
 						if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) && ent:Visible( self.Entity ) ) then
 						
-							ent:TakeDamage( 250, self.Entity:GetOwner(), self.Entity )
+							ent:TakeDamage( 200, self.Entity:GetOwner(), self.Entity )
 						
 						end
 					

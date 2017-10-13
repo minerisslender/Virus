@@ -8,8 +8,8 @@ SWEP.ViewModelFlip = false
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 
-SWEP.Primary.ClipSize = 12
-SWEP.Primary.DefaultClip = 12
+SWEP.Primary.ClipSize = 11
+SWEP.Primary.DefaultClip = 11
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "OV_LazerPistol"
 
@@ -97,11 +97,13 @@ function SWEP:ShootFirstRicochet( attacker, trace, info )
 	bullet.Tracer	= 1
 	bullet.TracerName = "laserricotracer"
 	bullet.Force	= 1
-	bullet.Damage	= info:GetDamage()
+	bullet.Damage	= info:GetDamage() * 0.75
 	bullet.AmmoType = "OV_LazerPistol"
 	bullet.Callback = function( attacker, trace, info ) self:ShootLastRicochet( attacker, trace, info ) end
 
 	attacker:FireBullets( bullet )
+
+	if ( IsFirstTimePredicted() ) then sound.Play( "FX_RicochetSound.Ricochet", trace.HitPos ) end
 
 end
 
@@ -117,10 +119,21 @@ function SWEP:ShootLastRicochet( attacker, trace, info )
 	bullet.Tracer	= 1
 	bullet.TracerName = "laserricotracer"
 	bullet.Force	= 1
-	bullet.Damage	= info:GetDamage()
+	bullet.Damage	= info:GetDamage() * 0.75
 	bullet.AmmoType = "OV_LazerPistol"
 
 	attacker:FireBullets( bullet )
+
+	if ( IsFirstTimePredicted() ) then sound.Play( "FX_RicochetSound.Ricochet", trace.HitPos ) end
+
+end
+
+
+-- Whip it out (hue)
+function SWEP:Deploy()
+
+	self.Weapon:EmitSound( "openvirus/effects/ov_deploy_scifi.wav" )
+	return true
 
 end
 

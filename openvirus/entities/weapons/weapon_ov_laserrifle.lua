@@ -44,7 +44,7 @@ end
 -- Primary attack
 function SWEP:PrimaryAttack()
 
-	self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav", 75, 125 )
+	self.Weapon:EmitSound( "weapons/gauss/fire1.wav", 90, 110 )
 
 	self:ShootBullet( 16, 1, 0.015 )
 
@@ -75,9 +75,9 @@ function SWEP:Think()
 		
 			if ( self.Primary.Charge < 100 ) then
 			
-				if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge + 0.2 end
+				if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge + 0.25 end
 			
-				if ( !self.Primary.ChargeSlowdown && ( self.Primary.Charge > 90 ) ) then
+				if ( !self.Primary.ChargeSlowdown && ( self.Primary.Charge > 75 ) ) then
 				
 					self.Primary.ChargeSlowdown = true
 					self.Weapon:EmitSound( "npc/attack_helicopter/aheli_damaged_alarm1.wav", 110, 150, 0.75, CHAN_STATIC )
@@ -96,11 +96,12 @@ function SWEP:Think()
 		
 			if ( ( self.Primary.BeginChargingTime < CurTime() ) && ( self.Primary.Charge > 0 ) ) then
 			
-				if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge - 0.4 end
+				if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge - 0.5 end
 			
-				if ( self.Primary.ChargeSlowdown && ( self.Primary.Charge <= 90 ) ) then
+				if ( self.Primary.ChargeSlowdown && ( self.Primary.Charge < 25 ) ) then
 				
 					self.Primary.ChargeSlowdown = false
+					self.Weapon:EmitSound( "weapons/physcannon/physcannon_charge.wav", 75, 110, 0.42, CHAN_STATIC )
 				
 				end
 			
@@ -135,6 +136,14 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 	self.Owner:FireBullets( bullet )
 
 	self:ShootEffects()
+
+end
+
+
+-- Whip it out (hue)
+function SWEP:Deploy()
+
+	return true
 
 end
 

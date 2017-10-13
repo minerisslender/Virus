@@ -20,16 +20,16 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev21 (Public Alpha)"
+GM.Version  =   "rev22 (Public Alpha)"
 
 
 -- Some global stuff here
 GM.OV_Survivor_Speed = 300
-GM.OV_Survivor_AdrenSpeed = 475
+GM.OV_Survivor_AdrenSpeed = 480
 GM.OV_Infected_Health = 100
-GM.OV_Infected_EnrageHealth = 500
-GM.OV_Infected_Speed = 375
-GM.OV_Infected_EnrageSpeed = 450
+GM.OV_Infected_EnrageHealth = 400
+GM.OV_Infected_Speed = 380
+GM.OV_Infected_EnrageSpeed = 460
 GM.OV_Infected_Model = "models/player/corpse1.mdl"
 
 
@@ -101,15 +101,15 @@ function GM:CreateTeams()
 
 	TEAM_SPECTATOR = 0
 	team.SetUp( TEAM_SPECTATOR, "Spectator", Color( 0, 0, 0 ) )
-	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_combine", "info_player_rebel", "info_player_counterterrorist", "info_player_terrorist" } )
 
 	TEAM_SURVIVOR = 1
 	team.SetUp( TEAM_SURVIVOR, "Survivor", Color( 255, 255, 255 ) )
-	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	team.SetSpawnPoint( TEAM_SURVIVOR, { "info_player_combine", "info_player_rebel", "info_player_counterterrorist", "info_player_terrorist" } )
 
 	TEAM_INFECTED = 2
 	team.SetUp( TEAM_INFECTED, "Infected", Color( 0, 255, 0 ) )
-	team.SetSpawnPoint( TEAM_SPECTATOR, { "info_player_counterterrorist", "info_player_terrorist" } )
+	team.SetSpawnPoint( TEAM_SURVIVOR, { "info_player_combine", "info_player_rebel", "info_player_counterterrorist", "info_player_terrorist" } )
 
 end
 

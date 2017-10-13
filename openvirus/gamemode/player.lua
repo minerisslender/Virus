@@ -139,7 +139,7 @@ function GM:PlayerInitialSpawn( ply )
 	if ( timer.Exists( "OV_RoundTimer" ) ) then
 	
 		net.Start( "OV_SendTimerCount" )
-			net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+			net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
 		net.Send( ply )
 	
 	end

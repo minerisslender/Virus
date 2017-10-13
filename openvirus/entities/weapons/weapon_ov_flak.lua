@@ -43,7 +43,7 @@ function SWEP:PrimaryAttack()
 
 	if ( !self:CanPrimaryAttack() ) then return end
 
-	self.Weapon:EmitSound( "weapons/357_fire2.wav", 75, 60, 1 )
+	self.Weapon:EmitSound( "weapons/flaregun/fire.wav", 90, 90 )
 	
 	self:ShootBullet( 50, 6, 0.06 )
 	

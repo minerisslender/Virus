@@ -1,4 +1,4 @@
--- This is an entity created when survivors spawn
+-- This is an entity created when infected spawn
 
 if ( SERVER ) then AddCSLuaFile() end
 

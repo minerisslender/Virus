@@ -76,7 +76,7 @@ function GM:Initialize()
 			if ( timer.Exists( "OV_RoundTimer" ) ) then
 			
 				net.Start( "OV_SendTimerCount" )
-					net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+					net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
 				net.Broadcast()
 			
 			end
@@ -382,7 +382,7 @@ function GM:BeginWaitingSession()
 	timer.Create( "OV_RoundTimer", 15, 1, function() GAMEMODE:BeginPreRound() end )
 
 	net.Start( "OV_SendTimerCount" )
-		net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+		net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
 	net.Broadcast()
 
 	-- Start some music
@@ -575,7 +575,7 @@ function GM:BeginMainRound()
 	end
 
 	net.Start( "OV_SendTimerCount" )
-		net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+		net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
 	net.Broadcast()
 
 	-- Start some music
@@ -620,7 +620,7 @@ function GM:EndMainRound()
 	timer.Create( "OV_RoundTimer", 15, 1, function() GAMEMODE:BeginPreRound() end )
 
 	net.Start( "OV_SendTimerCount" )
-		net.WriteInt( timer.TimeLeft( "OV_RoundTimer" ), 16 )
+		net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
 	net.Broadcast()
 
 	if ( team.NumPlayers( TEAM_SURVIVOR ) > 0 ) then

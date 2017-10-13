@@ -1,4 +1,4 @@
--- LaserTracer taken from the Sandbox gamemode
+-- FlakTracer
 
 EFFECT.Mat = Material( "effects/spark" )
 EFFECT.SpriteMat = CreateMaterial( "flaktracer_flare1", "UnlitGeneric", { [ "$basetexture" ] = "sprites/flare1", [ "$vertexcolor" ] = "1", [ "$vertexalpha" ] = "1", [ "$additive" ] = "1", [ "$nocull" ] = "1" } )
@@ -33,12 +33,13 @@ function EFFECT:Init( data )
 	self.Length = 0.15
 
 	self.DieTime = CurTime() + self.TracerTime
-	self.SpriteLifeTime = CurTime() + 0.2
 
 end
 
 
 function EFFECT:Think()
+
+	if ( self.DieTime < CurTime() ) then self:Remove() end
 
 	return true
 
@@ -50,14 +51,10 @@ function EFFECT:Render()
 	local fDelta = ( self.DieTime - CurTime() ) / self.TracerTime
 	fDelta = math.Clamp( fDelta, 0, 1 ) ^ 0.5
 
-	if ( self.SpriteLifeTime >= CurTime() ) then
+	if ( self.DieTime >= CurTime() ) then
 	
 		render.SetMaterial( self.SpriteMat )
-		render.DrawSprite( self.StartPos, 64, 64, Color( 255, 200, 0, 200 ) )
-	
-	end
-
-	if ( self.DieTime >= CurTime() ) then
+		render.DrawSprite( self.StartPos, 16, 16, Color( 255, 200, 0, 200 ) )
 	
 		render.SetMaterial( self.SpriteMat )
 		render.DrawSprite( self.EndPos, 32, 32, Color( 255, 200, 0, 200 ) )

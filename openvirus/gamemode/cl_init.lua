@@ -265,7 +265,7 @@ function GM:Think()
 	-- Update infected flame frames
 	if ( OV_Material_InfectedFlameFrameUpdate < CurTime() ) then
 	
-		OV_Material_InfectedFlameFrameUpdate = CurTime() + 0.1
+		OV_Material_InfectedFlameFrameUpdate = CurTime() + 0.08
 		if ( OV_Material_InfectedFlameFrameInt >= #OV_Material_InfectedFlameFrames ) then
 		
 			OV_Material_InfectedFlameFrameInt = 1
@@ -275,25 +275,6 @@ function GM:Think()
 		
 			OV_Material_InfectedFlameFrameInt = OV_Material_InfectedFlameFrameInt + 1
 			OV_Material_InfectedFlame = OV_Material_InfectedFlameFrames[ OV_Material_InfectedFlameFrameInt ]
-		
-		end
-	
-	end
-
-	-- Dynamic light
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && LocalPlayer():GetInfectionStatus() ) then
-	
-		local infected_light = DynamicLight( LocalPlayer():EntIndex() )
-		if ( infected_light ) then
-		
-			infected_light.brightness = 1
-			infected_light.decay = 500
-			infected_light.dietime = CurTime() + 2
-			infected_light.pos = LocalPlayer():GetBonePosition( LocalPlayer():LookupBone( "ValveBiped.Bip01_Spine2" ) )
-			infected_light.size = 128
-			infected_light.r = LocalPlayer():GetColor().r
-			infected_light.g = LocalPlayer():GetColor().g
-			infected_light.b = LocalPlayer():GetColor().b
 		
 		end
 	
@@ -331,6 +312,32 @@ function GM:Think()
 end
 
 
+-- Called after the player think function
+function OV_PlayerPostThink( ply )
+
+	-- Dynamic light
+	if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
+	
+		infectedlight = DynamicLight( ply:EntIndex() )
+		if ( infectedlight ) then
+		
+			infectedlight.brightness = 1
+			infectedlight.decay = 500
+			infectedlight.dietime = CurTime() + 2
+			infectedlight.pos = ply:GetBonePosition( ply:LookupBone( "ValveBiped.Bip01_Spine2" ) )
+			infectedlight.size = 128
+			infectedlight.r = ply:GetColor().r
+			infectedlight.g = ply:GetColor().g
+			infectedlight.b = ply:GetColor().b
+		
+		end
+	
+	end
+
+end
+hook.Add( "PlayerPostThink", "OV_PlayerPostThink", OV_PlayerPostThink )
+
+
 -- Update Round status
 function OV_UpdateRoundStatus( len )
 
@@ -353,7 +360,7 @@ function OV_SendTimerCount( len )
 	if ( timer.Exists( "OV_CountdownTimer" ) ) then timer.Remove( "OV_CountdownTimer" ) end
 
 	-- Create a fake timer as an indicator
-	timer.Create( "OV_RoundTimer", net.ReadInt( 16 ), 1, function() end )
+	timer.Create( "OV_RoundTimer", net.ReadFloat(), 1, function() end )
 
 	-- If this is the main round we are gonna do count downs
 	if ( OV_Game_InRound && timer.Exists( "OV_RoundTimer" ) ) then
@@ -761,31 +768,6 @@ end
 -- Called after when rendering opaque renderables
 function OV_PostDrawTranslucentRenderables( depth, skybox )
 
-	-- Show the infected flame
-	for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
-	
-		-- Render the sprite
-		if ( ply:IsValid() && ply:Alive() && ply:GetInfectionStatus() ) then
-		
-			cam.Start3D2D( ply:GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 90, 90 ), 0.5 )
-			
-				local flame_red, flame_green, flame_blue = 180, 255, 0
-				if ( ply:GetEnragedStatus() ) then
-				
-					flame_red, flame_green, flame_blue = 255, 255, 255
-				
-				end
-			
-				surface.SetDrawColor( flame_red, flame_green, flame_blue, 255 )
-				surface.SetMaterial( OV_Material_InfectedFlame )
-				surface.DrawTexturedRect( -50, -292, 100, 300 )
-			
-			cam.End3D2D()
-		
-		end
-	
-	end
-
 	-- Begin 3D TargetID
 	for _, ply in pairs( player.GetAll() ) do
 	
@@ -819,7 +801,32 @@ function OV_PostDrawTranslucentRenderables( depth, skybox )
 	
 	end
 
-	-- Show infected player health
+	-- Infected flame
+	for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
+	
+		if ( ply:IsValid() && ply:Alive() && ply:GetInfectionStatus() ) then
+		
+			-- Render the flame
+			cam.Start3D2D( ply:GetPos(), Angle( 0, EyeAngles().y - 90, 90 ), 0.5 )
+			
+				local flame_red, flame_green, flame_blue = 180, 255, 0
+				if ( ply:GetEnragedStatus() ) then
+				
+					flame_red, flame_green, flame_blue = 255, 255, 255
+				
+				end
+			
+				surface.SetDrawColor( flame_red, flame_green, flame_blue, 255 )
+				surface.SetMaterial( OV_Material_InfectedFlame )
+				surface.DrawTexturedRect( -50, -292, 100, 300 )
+			
+			cam.End3D2D()
+		
+		end
+	
+	end
+
+	-- Infected player health
 	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && ( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) > CurTime() ) ) then
 	
 		cam.Start3D2D( LocalPlayer():GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 270, 90 ), 0.5 )
