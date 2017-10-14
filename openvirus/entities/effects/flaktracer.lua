@@ -39,9 +39,7 @@ end
 
 function EFFECT:Think()
 
-	if ( self.DieTime < CurTime() ) then self:Remove() end
-
-	return true
+	return ( self.DieTime >= CurTime() )
 
 end
 

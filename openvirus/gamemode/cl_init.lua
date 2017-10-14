@@ -17,6 +17,8 @@ function GM:Initialize()
 	OV_DamageValues = {}
 	OV_WeaponSelectionName = ""
 	OV_WeaponSelectionNameTime = 0
+	OV_ShowScoreFrags = 0
+	OV_ShowScoreTime = 0
 
 	OV_Game_WaitingForPlayers = true
 	OV_Game_PreRound = false
@@ -26,9 +28,18 @@ function GM:Initialize()
 	OV_Game_MaxRounds = 0
 
 	OV_Game_Radar_Enabled = true
+	OV_Game_Ranking_Enabled = true
+
+	OV_Game_PlayerRank_Table = {}
+	OV_Game_PlayerRank_Position = 0
+	OV_Game_PlayerRank_Update = 0
 
 	-- Global HUD Scale
 	OV_HUD_Scale = math.Clamp( ScrH() * 0.00155, 1, 2 )
+
+	OV_HUD_Scale_PlayerRank = "TargetIDSmall"
+	if ( OV_HUD_Scale >= 1.25 ) then OV_HUD_Scale_PlayerRank = "TargetID" end
+	if ( OV_HUD_Scale >= 1.75 ) then OV_HUD_Scale_PlayerRank = "CloseCaption_Normal" end
 
 	-- Radar player point
 	OV_Material_Radar = Material( "openvirus/radar.vmt" )
@@ -283,7 +294,7 @@ function GM:Think()
 	-- Geiger Counter
 	if ( ov_cl_survivor_geigercounter:GetBool() && OV_Game_InRound ) then
 	
-		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() ) then
+		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 		
 			for _, ent in pairs( ents.FindInSphere( LocalPlayer():GetPos(), 1024 ) ) do
 			
@@ -309,6 +320,56 @@ function GM:Think()
 	
 	end
 
+	-- Ranking system
+	if ( OV_Game_Ranking_Enabled && OV_Game_InRound && ( OV_Game_PlayerRank_Update < CurTime() ) && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
+	
+		-- Get the set of scores 
+		for _, ply in pairs( player.GetAll() ) do
+		
+			if ( ply:Team() != TEAM_SPECTATOR ) then
+			
+				OV_Game_PlayerRank_Table[ ply:UserID() ] = -ply:EntIndex() + ( ply:Frags() * 50 )
+			
+			end
+		
+		end
+	
+		-- Use the list and find out what position we are in
+		for k, v in pairs( table.SortByKey( OV_Game_PlayerRank_Table ) ) do
+		
+			if ( v == LocalPlayer():UserID() ) then
+			
+				OV_Game_PlayerRank_Position = k
+			
+			end
+		
+		end
+	
+		-- Display proper position value
+		OV_Game_PlayerRank_Position = tostring( OV_Game_PlayerRank_Position )
+		if ( string.EndsWith( OV_Game_PlayerRank_Position, "1" ) ) then
+		
+			OV_Game_PlayerRank_Position = OV_Game_PlayerRank_Position.."st"
+		
+		elseif ( string.EndsWith( OV_Game_PlayerRank_Position, "2" ) ) then
+		
+			OV_Game_PlayerRank_Position = OV_Game_PlayerRank_Position.."nd"
+		
+		elseif ( string.EndsWith( OV_Game_PlayerRank_Position, "3" ) ) then
+		
+			OV_Game_PlayerRank_Position = OV_Game_PlayerRank_Position.."rd"
+		
+		else
+		
+			OV_Game_PlayerRank_Position = OV_Game_PlayerRank_Position.."th"
+		
+		end
+	
+		OV_Game_PlayerRank_Table = {}
+		OV_Game_PlayerRank_Update = CurTime() + 1
+	
+	end
+
 end
 
 
@@ -331,6 +392,14 @@ function OV_PlayerPostThink( ply )
 			infectedlight.b = ply:GetColor().b
 		
 		end
+	
+	end
+
+	-- Show score on the HUD
+	if ( ply:IsValid() && ( OV_ShowScoreFrags != ply:Frags() ) ) then
+	
+		OV_ShowScoreFrags = ply:Frags()
+		OV_ShowScoreTime = CurTime() + 4
 	
 	end
 
@@ -529,13 +598,14 @@ end
 net.Receive( "OV_SetMusic", OV_SetMusic )
 
 
--- Update radar visibility
-function OV_RadarEnabled( len )
+-- Update settings
+function OV_SettingsEnabled( len )
 
 	OV_Game_Radar_Enabled = net.ReadBool()
+	OV_Game_Ranking_Enabled = net.ReadBool()
 
 end
-net.Receive( "OV_RadarEnabled", OV_RadarEnabled )
+net.Receive( "OV_SettingsEnabled", OV_SettingsEnabled )
 
 
 -- Called when a HUD element wants to be drawn
@@ -577,7 +647,7 @@ function GM:HUDPaint()
 	end
 
 	-- If cl_drawhud is 0 or we are spectator
-	if ( !GetConVar( "cl_drawhud" ):GetBool() || ( LocalPlayer():Team() == TEAM_SPECTATOR ) ) then return end
+	if ( !GetConVar( "cl_drawhud" ):GetBool() ) then return end
 
 	-- Draw a text for WFP session
 	if ( OV_Game_WaitingForPlayers ) then
@@ -603,18 +673,36 @@ function GM:HUDPaint()
 	if ( !OV_Game_PreRound && !OV_Game_EndRound ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
-		surface.DrawRect( ScrW() / 2 - 30 * OV_HUD_Scale, 15, 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
+		surface.DrawRect( ScrW() / 2 - ( 30 * OV_HUD_Scale ), 15, 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
 		draw.SimpleTextOutlined( "TIME LEFT", "DermaDefaultBold", ScrW() / 2, 15 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
 	
 		local hud_timercount = 0
 		if ( timer.Exists( "OV_RoundTimer" ) ) then hud_timercount = math.Round( timer.TimeLeft( "OV_RoundTimer" ) ) end
 	
-		draw.SimpleTextOutlined( tostring( hud_timercount ), "CloseCaption_Bold", ScrW() / 2, 26 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
+		draw.SimpleTextOutlined( hud_timercount, "CloseCaption_Bold", ScrW() / 2, 26 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
+	
+	end
+
+	-- Ranking
+	if ( IsMounted( "cstrike" ) && !OV_Game_PreRound && !OV_Game_EndRound && ( OV_Game_PlayerRank_Position != 0 ) ) then
+	
+		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
+		surface.DrawRect( 15, ScrH() - 15 - ( 36 * OV_HUD_Scale ), 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
+	
+		draw.SimpleTextOutlined( "RANK", "DermaDefaultBold", 15 + ( 30 * OV_HUD_Scale ), ScrH() - ( 15 * OV_HUD_Scale ), Color( 255, 255, 255, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 255, 0 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color( 0, 0, 0, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 255, 0 ) ) )
+		draw.SimpleTextOutlined( OV_Game_PlayerRank_Position, OV_HUD_Scale_PlayerRank, 15 + ( 30 * OV_HUD_Scale ), ScrH() - ( ( 30 - OV_HUD_Scale^2 ) * OV_HUD_Scale ), Color( 255, 255, 255, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 255, 0 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color( 0, 0, 0, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 255, 0 ) ) )
+	
+		if ( OV_ShowScoreTime >= CurTime() ) then
+		
+			draw.SimpleTextOutlined( "SCORE", "DermaDefaultBold", 15 + ( 30 * OV_HUD_Scale ), ScrH() - ( 15 * OV_HUD_Scale ), Color( 255, 255, 255, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 0, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color( 0, 0, 0, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 0, 255 ) ) )
+			draw.SimpleTextOutlined( OV_ShowScoreFrags, OV_HUD_Scale_PlayerRank, 15 + ( 30 * OV_HUD_Scale ), ScrH() - ( ( 30 - OV_HUD_Scale^2 ) * OV_HUD_Scale ), Color( 255, 255, 255, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 0, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color( 0, 0, 0, math.Remap( OV_ShowScoreTime - CurTime(), 0, 0.5, 0, 255 ) ) )
+		
+		end
 	
 	end
 
 	-- Radar
-	if ( !OV_Game_PreRound && !OV_Game_EndRound && OV_Game_Radar_Enabled ) then
+	if ( !OV_Game_PreRound && !OV_Game_EndRound && OV_Game_Radar_Enabled && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.SetMaterial( OV_Material_Radar )
@@ -622,7 +710,7 @@ function GM:HUDPaint()
 	
 		for _, ply in pairs( player.GetAll() ) do
 		
-			if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply:GetPos():Distance( LocalPlayer():GetPos() ) < 1024 ) && ( ply != LocalPlayer() ) ) then
+			if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply != LocalPlayer() ) ) then
 			
 				-- World to Radar
 				local x_diff = ply:GetPos().x - LocalPlayer():GetPos().x
@@ -653,7 +741,7 @@ function GM:HUDPaint()
 				
 				end
 			
-				y_diff = -1 * ( math.sqrt( ( ( x_diff ) * ( x_diff ) + ( y_diff ) * ( y_diff ) ) ) )
+				y_diff = math.Clamp( -1 * ( math.sqrt( ( ( x_diff ) * ( x_diff ) + ( y_diff ) * ( y_diff ) ) ) ), -1024, 1024 )
 				x_diff = 0
 			
 				flOffset = LocalPlayer():GetAngles().y - flOffset
@@ -675,7 +763,7 @@ function GM:HUDPaint()
 				
 				end
 			
-				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( LocalPlayer():GetPos():Distance( ply:GetPos() ), 0, 1024, 200, 0 ) )
+				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( math.Clamp( LocalPlayer():GetPos():Distance( ply:GetPos() ), 0, 1024 ), 0, 1024, 200, 10 ) )
 				surface.SetMaterial( OV_Material_RadarPoint )
 				surface.DrawTexturedRect( ( iRadarRadius / 2 ) + xnew_diff, ( iRadarRadius / 2 ) + ynew_diff, 6 * OV_HUD_Scale, 6 * OV_HUD_Scale )
 			
@@ -763,6 +851,15 @@ function GM:HUDPaintBackground()
 	end
 
 end
+
+
+-- Called when a player sends a message
+function OV_OnPlayerChat( ply )
+
+	if ( IsValid( ply ) ) then chat.PlaySound() end
+
+end
+hook.Add( "OnPlayerChat", "OV_OnPlayerChat", OV_OnPlayerChat )
 
 
 -- Called after when rendering opaque renderables

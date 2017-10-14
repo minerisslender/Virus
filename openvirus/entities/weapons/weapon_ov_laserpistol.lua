@@ -64,6 +64,21 @@ function SWEP:SecondaryAttack()
 end
 
 
+-- Reload
+function SWEP:Reload()
+
+	-- Play a sound
+	if ( ( self.Owner:GetAmmoCount( self.Weapon:GetPrimaryAmmoType() ) > 0 ) && ( self.Weapon:Clip1() < self.Primary.DefaultClip ) ) then
+	
+		self.Weapon:EmitSound( "weapons/cguard/charging.wav", 75, 100, 0.7 )
+	
+	end
+
+	self.Weapon:DefaultReload( ACT_VM_RELOAD )
+
+end
+
+
 -- Shoot bullets
 function SWEP:ShootBullet( damage, num_bullets, aimcone )
 

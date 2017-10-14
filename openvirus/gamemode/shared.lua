@@ -20,7 +20,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev22 (Public Alpha)"
+GM.Version  =   "rev23 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -35,6 +35,13 @@ GM.OV_Infected_Model = "models/player/corpse1.mdl"
 
 -- Should the player take damage
 function GM:PlayerShouldTakeDamage( ply, attacker )
+
+	-- Players can only be damaged in a round
+	if ( !OV_Game_InRound ) then
+	
+		return false
+	
+	end
 
 	-- Block damaging players
 	if ( ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && attacker:IsValid() && ( attacker:GetClass() != "trigger_hurt" ) ) then

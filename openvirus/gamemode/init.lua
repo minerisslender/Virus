@@ -26,9 +26,14 @@ function GM:Initialize()
 	OV_Game_WeaponLoadout_Primary = {}
 	OV_Game_WeaponLoadout_Secondary = {}
 	OV_Game_WeaponLoadout_Shotguns = {}
-	OV_Game_WeaponLoadout_RemoveSelected = "UNKNOWN"
+	OV_Game_WeaponLoadout_RemoveSelected = ""
 
-	OV_Game_LastRandomChosenInfected = "STEAM_ID_PENDING"
+	OV_Game_LastRandomChosenInfected = 0
+
+	OV_Game_PlayerRank_Table = {}
+	OV_Game_PlayerRank_First = 0
+	OV_Game_PlayerRank_Second = 0
+	OV_Game_PlayerRank_Third = 0
 
 	-- Network Strings
 	util.AddNetworkString( "OV_UpdateRoundStatus" )
@@ -39,7 +44,7 @@ function GM:Initialize()
 	util.AddNetworkString( "OV_SetMusic" )
 	util.AddNetworkString( "OV_CStrikeValidation" )
 	util.AddNetworkString( "OV_ClientInitializedMusic" )
-	util.AddNetworkString( "OV_RadarEnabled" )
+	util.AddNetworkString( "OV_SettingsEnabled" )
 
 	-- Set the default deploy speed to 1
 	game.ConsoleCommand( "sv_defaultdeployspeed 1\n" )
@@ -57,6 +62,7 @@ function GM:Initialize()
 	ov_sv_survivor_css_hands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
 	ov_sv_allow_non_css_owners = CreateConVar( "ov_sv_allow_non_css_owners", "1", FCVAR_NOTIFY, "Players who don't own CS:S will be allowed to play." )
 	ov_sv_enable_player_radar = CreateConVar( "ov_sv_enable_player_radar", "1", FCVAR_NOTIFY, "Players can see the radar." )
+	ov_sv_enable_player_ranking = CreateConVar( "ov_sv_enable_player_ranking", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
 
 	-- ConCommands
 	concommand.Add( "invwep", function( ply, cmd, args, argstring ) if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then ply:SelectWeapon( argstring ) end end )
@@ -81,8 +87,9 @@ function GM:Initialize()
 			
 			end
 		
-			net.Start( "OV_RadarEnabled" )
+			net.Start( "OV_SettingsEnabled" )
 				net.WriteBool( ov_sv_enable_player_radar:GetBool() )
+				net.WriteBool( ov_sv_enable_player_ranking:GetBool() )
 			net.Send( ply )
 		
 		end
@@ -309,7 +316,7 @@ function GM:Think()
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ( ( ov_sv_onlyonesurvivor:GetBool() && ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) ) || ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) && ply:IsValid() && ( ply:IsBot() || ( ply:SteamID() != OV_Game_LastRandomChosenInfected ) ) ) then
+			if ( ( ( ov_sv_onlyonesurvivor:GetBool() && ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) ) || ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) && ply:IsValid() && ( ply:UserID() != OV_Game_LastRandomChosenInfected ) ) then
 			
 				if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) * 2 ) == ( team.NumPlayers( TEAM_SURVIVOR ) * 2 ) ) then
 				
@@ -317,7 +324,7 @@ function GM:Think()
 				
 					if ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) then BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_stinger.wav\" )" ) end
 				
-					OV_Game_LastRandomChosenInfected = ply:SteamID()
+					OV_Game_LastRandomChosenInfected = ply:UserID()
 				
 				end
 			
@@ -478,6 +485,10 @@ function GM:BeginPreRound()
 	OV_Game_LastSurvivor = false
 	OV_Game_EndRound = false
 
+	OV_Game_PlayerRank_First = 0
+	OV_Game_PlayerRank_Second = 0
+	OV_Game_PlayerRank_Third = 0
+
 	net.Start( "OV_UpdateRoundStatus" )
 		net.WriteBool( OV_Game_WaitingForPlayers )
 		net.WriteBool( OV_Game_PreRound )
@@ -581,9 +592,10 @@ function GM:BeginMainRound()
 	-- Start some music
 	OV_SetMusic( 3 )
 
-	-- Update radar visibility
-	net.Start( "OV_RadarEnabled" )
+	-- Update settings
+	net.Start( "OV_SettingsEnabled" )
 		net.WriteBool( ov_sv_enable_player_radar:GetBool() )
+		net.WriteBool( ov_sv_enable_player_ranking:GetBool() )
 	net.Broadcast()
 
 	-- Allow for events to happen after the round has started
@@ -664,6 +676,9 @@ function GM:EndMainRound()
 	-- Open Scoreboard for players
 	timer.Simple( 2, function() BroadcastLua( "GAMEMODE:ScoreboardShow()" ) end )
 
+	-- Reset ranking on clients
+	if ( ov_sv_enable_player_ranking:GetBool() ) then BroadcastLua( "OV_Game_PlayerRank_Position = 0" ) end
+
 	-- Allow for events to happen after the round has ended
 	hook.Call( "PostEndMainRound", GAMEMODE )
 
@@ -683,6 +698,87 @@ function OV_Game_WaitingForPlayers_GetPlayerCount()
 
 end
 timer.Create( "OV_Game_WaitingForPlayers_GetPlayerCount", 1, 0, OV_Game_WaitingForPlayers_GetPlayerCount )
+
+
+-- Ranking system
+function GM:PlayerRankCheckup()
+
+	-- Fail if ov_sv_enable_player_ranking is false
+	if ( !ov_sv_enable_player_ranking:GetBool() ) then return end
+
+	-- Fail if we are not in a round
+	if ( !OV_Game_InRound ) then return end
+
+	-- Set up our table for sorting
+	for _, ply in pairs( player.GetAll() ) do
+	
+		if ( ply:Team() != TEAM_SPECTATOR ) then
+		
+			OV_Game_PlayerRank_Table[ ply:UserID() ] = -ply:EntIndex() + ( ply:Frags() * 50 )
+		
+		end
+	
+	end
+
+	-- Get the player ranking and announce stuff if we can
+	for k, v in pairs( table.SortByKey( OV_Game_PlayerRank_Table ) ) do
+	
+		if ( k == 1 ) then
+		
+			-- First place
+			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_First ) ) then
+			
+				OV_Game_PlayerRank_First = v
+				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." has reached 1st place!" )
+			
+				net.Start( "OV_SendInfoText" )
+					net.WriteString( "AWESOME! YOU'VE REACHED 1ST PLACE" )
+					net.WriteColor( Color( 255, 255, 255 ) )
+					net.WriteInt( 3, 4 )
+				net.Send( Player( v ) )
+			
+			end
+		
+		elseif ( k == 2 ) then
+		
+			-- Second place
+			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_Second ) ) then
+			
+				OV_Game_PlayerRank_Second = v
+				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." is now in 2nd place." )
+			
+				net.Start( "OV_SendInfoText" )
+					net.WriteString( "YOU'RE IN 2ND PLACE" )
+					net.WriteColor( Color( 255, 255, 255 ) )
+					net.WriteInt( 3, 4 )
+				net.Send( Player( v ) )
+			
+			end
+		
+		elseif ( k == 3 ) then
+		
+			-- Third place
+			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_Third ) ) then
+			
+				OV_Game_PlayerRank_Third = v
+				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." is now in 3rd place." )
+			
+				net.Start( "OV_SendInfoText" )
+					net.WriteString( "YOU'RE IN 3RD PLACE" )
+					net.WriteColor( Color( 255, 255, 255 ) )
+					net.WriteInt( 3, 4 )
+				net.Send( Player( v ) )
+			
+			end
+		
+		end
+	
+	end
+
+	-- Free up the table
+	OV_Game_PlayerRank_Table = {}
+
+end
 
 
 -- Show Help

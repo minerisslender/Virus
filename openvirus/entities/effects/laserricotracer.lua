@@ -12,6 +12,15 @@ function EFFECT:Init( data )
 
 	self:SetRenderBoundsWS( self.StartPos, self.EndPos )
 
+	-- Sparks
+	local effectdata = EffectData()
+	effectdata:SetOrigin( self.StartPos )
+	effectdata:SetNormal( ( self.EndPos - self.StartPos ):GetNormalized() * -3 )
+	effectdata:SetMagnitude( 1 )
+	effectdata:SetScale( 1 )
+	effectdata:SetRadius( 6 )
+	util.Effect( "Sparks", effectdata )
+
 end
 
 function EFFECT:Think()

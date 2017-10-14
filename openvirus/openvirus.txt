@@ -78,5 +78,14 @@
 			"type"	"CheckBox"
 			"default"	"1"
 		}
+	
+		9
+		{
+			"name"	"ov_sv_enable_player_ranking"
+			"text"	"[GAME] Enable Ranking"
+			"help"	"Announce player ranks during the game."
+			"type"	"CheckBox"
+			"default"	"1"
+		}
 	}
 }

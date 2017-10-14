@@ -41,6 +41,9 @@ function GM:PlayerDisconnected( ply )
 	
 	end
 
+	-- Update player ranking
+	timer.Simple( 0.1, function() hook.Call( "PlayerRankCheckup", GAMEMODE ) end )
+
 end
 
 
@@ -48,7 +51,7 @@ end
 function GM:PlayerDeathThink( ply )
 
 	-- Respawn players after a certain amount of time
-	if ( ply.NextSpawnTime && ( ( ply.NextSpawnTime + 2 ) < CurTime() ) ) then
+	if ( ply.NextSpawnTime && ( ( ply.NextSpawnTime + 3 ) < CurTime() ) ) then
 	
 		ply:Spawn()
 	
@@ -98,6 +101,9 @@ function OV_PlayerDeath( ply, inflictor, attacker )
 	
 	end
 
+	-- Update player ranking
+	hook.Call( "PlayerRankCheckup", GAMEMODE )
+
 end
 hook.Add( "PlayerDeath", "OV_PlayerDeath", OV_PlayerDeath )
 
@@ -144,8 +150,9 @@ function GM:PlayerInitialSpawn( ply )
 	
 	end
 
-	net.Start( "OV_RadarEnabled" )
+	net.Start( "OV_SettingsEnabled" )
 		net.WriteBool( ov_sv_enable_player_radar:GetBool() )
+		net.WriteBool( ov_sv_enable_player_ranking:GetBool() )
 	net.Send( ply )
 
 	-- Call the client for validation
@@ -163,8 +170,7 @@ function GM:PlayerSpawn( ply )
 	-- Player is in spectator
 	if ( ply:Team() == TEAM_SPECTATOR ) then
 	
-		ply:RemoveAllItems()
-		ply:Spectate( OBS_MODE_ROAMING )
+		GAMEMODE:PlayerSpawnAsSpectator( ply )
 		return
 	
 	end

@@ -45,7 +45,7 @@ function meta:InfectPlayer( ply )
 	end
 
 	-- Give the player who infected this player a point
-	if ( ply && ply:IsValid() && ply:IsPlayer() ) then ply:AddFrags( 1 ) end
+	if ( ply && ply:IsValid() && ply:IsPlayer() ) then ply:AddFrags( 1 ) hook.Call( "PlayerRankCheckup", GAMEMODE ) end
 
 	-- Set a time survived
 	if ( ply && ply:IsValid() && ply:IsPlayer() && timer.Exists( "OV_RoundTimer" ) ) then
