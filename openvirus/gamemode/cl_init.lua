@@ -365,6 +365,12 @@ function GM:Think()
 		
 		end
 	
+		-- Extra check for 11th 12th 13th
+		OV_Game_PlayerRank_Position = string.gsub( OV_Game_PlayerRank_Position, "11st", "11th" )
+		OV_Game_PlayerRank_Position = string.gsub( OV_Game_PlayerRank_Position, "12nd", "12th" )
+		OV_Game_PlayerRank_Position = string.gsub( OV_Game_PlayerRank_Position, "13rd", "13th" )
+	
+		-- Finish up
 		OV_Game_PlayerRank_Table = {}
 		OV_Game_PlayerRank_Update = CurTime() + 1
 	

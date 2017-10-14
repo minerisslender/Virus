@@ -65,7 +65,9 @@ function BOT_PlayerSpawn( ply )
 	if ( ply:IsBot() ) then
 	
 		ply.BotPlayerAttackSpeed = CurTime()
-		ply.BotPlayerSkill = math.random( 16, 64 )
+		ply.BotPlayerReactionSpeed = CurTime()
+		ply.BotPlayerReactionSkill = math.Rand( 0, 2 )
+		ply.BotPlayerSkill = math.random( 16, 32 )
 		timer.Simple( 0.1, function() if ( ply && ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && ( #ply:GetWeapons() > 0 ) ) then ply.BotPlayerPreferredWeapon = table.Random( ply:GetWeapons() ) end end )
 		ply.BotPlayerUseSLAM = tobool( math.random( 0, 1 ) )
 		ply.BotPlayerUseSLAMTime = CurTime() + math.random( 4, 12 )
@@ -181,7 +183,7 @@ function BOT_StartCommand( ply, ucmd )
 				
 					table.insert( distancetable, ply:GetPos():Distance( ply2:GetPos() ) )
 				
-					if ( ply:GetPos():Distance( ply2:GetPos() ) == math.min( unpack( distancetable ) ) ) then
+					if ( ( ply:GetPos():Distance( ply2:GetPos() ) == math.min( unpack( distancetable ) ) ) && ( ply.BotPlayerReactionSpeed < CurTime() ) ) then
 					
 						ply:SetEyeAngles( ( ( ply2:EyePos() - Vector( 0, 0, ply.BotPlayerSkill ) ) - ply:EyePos() ):Angle() )
 					
@@ -199,6 +201,9 @@ function BOT_StartCommand( ply, ucmd )
 			
 			end
 		
+			-- Set our reaction time
+			if ( #distancetable <= 0 ) then ply.BotPlayerReactionSpeed = CurTime() + ply.BotPlayerReactionSkill end
+		
 		end
 	
 		-- Switch preferred weapons
@@ -206,11 +211,11 @@ function BOT_StartCommand( ply, ucmd )
 		
 			if ( ply.BotPlayerPreferredWeapon && ply.BotPlayerPreferredWeapon:IsValid() ) then
 			
-				if ( ( ply.BotPlayerPreferredWeapon:Clip1() <= 0 ) && ( ply.BotPlayerPreferredWeapon:Ammo1() <= 0 ) ) then
+				if ( ( ply.BotPlayerPreferredWeapon:GetClass() != "weapon_ov_laserrifle" ) && ( ply.BotPlayerPreferredWeapon:Clip1() <= 0 ) && ( ply.BotPlayerPreferredWeapon:Ammo1() <= 0 ) ) then
 				
 					ply.BotPlayerPreferredWeapon = table.Random( ply:GetWeapons() )
 				
-					if ( ply.BotPlayerPreferredWeapon:GetClass() == "weapon_ov_adrenaline" ) then
+					if ( ( ply.BotPlayerPreferredWeapon:GetClass() == "weapon_ov_slam" ) || ( ply.BotPlayerPreferredWeapon:GetClass() == "weapon_ov_adrenaline" ) ) then
 					
 						ply.BotPlayerPreferredWeapon = nil
 					
@@ -236,7 +241,7 @@ function BOT_StartCommand( ply, ucmd )
 		-- Reload weapons
 		if ( ply:Team() == TEAM_SURVIVOR ) then
 		
-			if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() ) then
+			if ( ply:GetActiveWeapon() && ply:GetActiveWeapon():IsValid() && ( ply:GetActiveWeapon():GetClass() != "weapon_ov_laserrifle" ) ) then
 			
 				if ( ply:GetActiveWeapon():Clip1() <= 0 ) then
 				
