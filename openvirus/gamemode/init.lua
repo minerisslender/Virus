@@ -53,7 +53,6 @@ function GM:Initialize()
 	game.ConsoleCommand( "sv_alltalk 1\n" )
 
 	-- ConVars
-	ov_sv_onlyonesurvivor = CreateConVar( "ov_sv_onlyonesurvivor", "0", FCVAR_NOTIFY, "Only One Survivor gametype. One survivor is set to dominate the infected until time runs out." )
 	ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
 	ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "256", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
 	ov_sv_infected_blood = CreateConVar( "ov_sv_infected_blood", "1", FCVAR_ARCHIVE, "Enable the infected blood effects." )
@@ -312,11 +311,11 @@ function GM:Think()
 	end
 
 	-- Select a random person to be infected
-	if ( OV_Game_InRound && ( ( ov_sv_onlyonesurvivor:GetBool() && ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) || ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) ) ) then
+	if ( OV_Game_InRound && ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) then
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ( ( ov_sv_onlyonesurvivor:GetBool() && ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) ) || ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) && ply:IsValid() && ( ply:UserID() != OV_Game_LastRandomChosenInfected ) ) then
+			if ( ( team.NumPlayers( TEAM_INFECTED ) == 0 ) && ply:IsValid() && ( ply:UserID() != OV_Game_LastRandomChosenInfected ) ) then
 			
 				if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) * 2 ) == ( team.NumPlayers( TEAM_SURVIVOR ) * 2 ) ) then
 				
@@ -419,6 +418,7 @@ function GM:BeginPreRound()
 		"weapon_ov_laserrifle",
 		"weapon_ov_xm1014",
 		"weapon_ov_mp5",
+		"weapon_ov_smg1",
 		"weapon_ov_sniper",
 		"weapon_ov_slam",
 		"weapon_ov_adrenaline"
@@ -436,7 +436,8 @@ function GM:BeginPreRound()
 	OV_Game_WeaponLoadout_Secondary = {
 		"weapon_ov_p90",
 		"weapon_ov_laserrifle",
-		"weapon_ov_mp5"
+		"weapon_ov_mp5",
+		"weapon_ov_smg1"
 	}
 
 	-- List shotgun weapons
@@ -577,13 +578,6 @@ function GM:BeginMainRound()
 	net.Broadcast()
 
 	timer.Create( "OV_RoundTimer", OV_Game_MainRoundTimerCount, 1, function() GAMEMODE:EndMainRound() end )
-
-	-- Only One Survivor
-	if ( ov_sv_onlyonesurvivor:GetBool() && timer.Exists( "OV_RoundTimer" ) ) then
-	
-		timer.Adjust( "OV_RoundTimer", OV_Game_MainRoundTimerCount / 3, 1, function() GAMEMODE:EndMainRound() end )
-	
-	end
 
 	net.Start( "OV_SendTimerCount" )
 		net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )

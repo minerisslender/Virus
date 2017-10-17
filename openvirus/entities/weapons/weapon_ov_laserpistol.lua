@@ -118,8 +118,6 @@ function SWEP:ShootFirstRicochet( attacker, trace, info )
 
 	attacker:FireBullets( bullet )
 
-	if ( IsFirstTimePredicted() ) then sound.Play( "FX_RicochetSound.Ricochet", trace.HitPos ) end
-
 end
 
 
@@ -138,8 +136,6 @@ function SWEP:ShootLastRicochet( attacker, trace, info )
 	bullet.AmmoType = "OV_LazerPistol"
 
 	attacker:FireBullets( bullet )
-
-	if ( IsFirstTimePredicted() ) then sound.Play( "FX_RicochetSound.Ricochet", trace.HitPos ) end
 
 end
 

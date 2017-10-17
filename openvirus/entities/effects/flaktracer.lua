@@ -39,7 +39,19 @@ end
 
 function EFFECT:Think()
 
-	return ( self.DieTime >= CurTime() )
+	-- Do stuff here
+	if ( self.DieTime < CurTime() ) then
+	
+		-- Sprites
+		local effectdata = EffectData()
+		effectdata:SetOrigin( self.EndPos )
+		util.Effect( "flaksprite", effectdata )
+	
+		return false
+	
+	end
+
+	return true
 
 end
 
@@ -49,15 +61,8 @@ function EFFECT:Render()
 	local fDelta = ( self.DieTime - CurTime() ) / self.TracerTime
 	fDelta = math.Clamp( fDelta, 0, 1 ) ^ 0.5
 
-	if ( self.DieTime >= CurTime() ) then
-	
-		render.SetMaterial( self.SpriteMat )
-		render.DrawSprite( self.StartPos, 16, 16, Color( 255, 200, 0, 200 ) )
-	
-		render.SetMaterial( self.SpriteMat )
-		render.DrawSprite( self.EndPos, 32, 32, Color( 255, 200, 0, 200 ) )
-	
-	end
+	render.SetMaterial( self.SpriteMat )
+	render.DrawSprite( self.StartPos, 16, 16, Color( 255, 200, 0, 200 ) )
 
 	render.SetMaterial( self.Mat )
 

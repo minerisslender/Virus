@@ -9,15 +9,6 @@
 	{
 		1
 		{
-			"name"	"ov_sv_onlyonesurvivor"
-			"text"	"[GAMETYPE] Only One Survivor"
-			"help"	"Only One Survivor gametype. One survivor is set to dominate the infected until time runs out."
-			"type"	"CheckBox"
-			"default"	"0"
-		}
-	
-		2
-		{
 			"name"	"ov_sv_infection_serverside_only"
 			"text"	"[INFECTION] Serverside Only"
 			"help"	"Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems."
@@ -25,7 +16,7 @@
 			"default"	"0"
 		}
 	
-		3
+		2
 		{
 			"name"	"ov_sv_infection_clientside_valid_distance"
 			"text"	"[INFECTION] Client Distance"
@@ -34,7 +25,7 @@
 			"default"	"256"
 		}
 	
-		4
+		3
 		{
 			"name"	"ov_sv_infected_blood"
 			"text"	"[INFECTED] Blood Effects"
@@ -43,7 +34,7 @@
 			"default"	"1"
 		}
 	
-		5
+		4
 		{
 			"name"	"ov_sv_infected_specific_model"
 			"text"	"[INFECTED] Specific Model"
@@ -52,7 +43,7 @@
 			"default"	"1"
 		}
 	
-		6
+		5
 		{
 			"name"	"ov_sv_survivor_setup_hands"
 			"text"	"[SURVIVOR] Viewmodel Hands"
@@ -61,7 +52,7 @@
 			"default"	"1"
 		}
 	
-		7
+		6
 		{
 			"name"	"ov_sv_survivor_css_hands"
 			"text"	"[SURVIVOR] Counter-Strike Hands"
@@ -70,7 +61,7 @@
 			"default"	"1"
 		}
 	
-		8
+		7
 		{
 			"name"	"ov_sv_enable_player_radar"
 			"text"	"[GAME] Enable Radar"
@@ -79,7 +70,7 @@
 			"default"	"1"
 		}
 	
-		9
+		8
 		{
 			"name"	"ov_sv_enable_player_ranking"
 			"text"	"[GAME] Enable Ranking"

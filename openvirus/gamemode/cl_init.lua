@@ -36,6 +36,7 @@ function GM:Initialize()
 
 	-- Global HUD Scale
 	OV_HUD_Scale = math.Clamp( ScrH() * 0.00155, 1, 2 )
+	OV_HUD_Scale_SuperClamped = math.Clamp( ScrH() * 0.00155, 1, 1.25 )
 
 	OV_HUD_Scale_PlayerRank = "TargetIDSmall"
 	if ( OV_HUD_Scale >= 1.25 ) then OV_HUD_Scale_PlayerRank = "TargetID" end
@@ -163,6 +164,7 @@ function GM:InitializeKillicons()
 	killicon.AddFont( "weapon_ov_pistol", "CSTRIKETypeDeath", "y", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_silencedpistol", "CSTRIKETypeDeath", "a", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "ent_ov_slam", "HL2MPTypeDeath", "*", Color( 255, 80, 0, 255 ) )
+	killicon.AddFont( "weapon_ov_smg1", "HL2MPTypeDeath", "/", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_sniper", "CSTRIKETypeDeath", "n", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_xm1014", "CSTRIKETypeDeath", "B", Color( 255, 80, 0, 255 ) )
 
@@ -379,6 +381,43 @@ function GM:Think()
 end
 
 
+-- Called each tick
+function GM:Tick()
+
+	-- Lerp calculation for Countdown Text and avoid frame stuff
+	for k, v in pairs( OV_CountdownText ) do
+	
+		v.x = ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 0.5, v.timeSet, 0, ScrW() ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 0.5, 0, 0, ScrW() ), 0, ScrW() )
+		if ( v.lerp ) then
+		
+			v.x = ( v.x * 0.1 ) + ( v.lerp.x * 0.9 )
+		
+		end
+		v.lerp = v.lerp or {}
+		v.lerp.x = v.x
+	
+	end
+
+	-- Lerp calculation for Information Text and avoid frame stuff
+	for k, v in pairs( OV_InformationText ) do
+	
+		v.x = ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 0.5, v.timeSet, 0, ScrW() ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 0.5, 0, 0, ScrW() ), 0, ScrW() )
+		v.y = ( ScrH() / 2 ) + 60 + ( 40 * k )
+		if ( v.lerp ) then
+		
+			v.x = ( v.x * 0.2 ) + ( v.lerp.x * 0.8 )
+			v.y = ( v.y * 0.3 ) + ( v.lerp.y * 0.7 )
+		
+		end
+		v.lerp = v.lerp or {}
+		v.lerp.x = v.x
+		v.lerp.y = v.y
+	
+	end
+
+end
+
+
 -- Called after the player think function
 function OV_PlayerPostThink( ply )
 
@@ -472,8 +511,8 @@ function OV_SendTimerCount( len )
 					OV_CountdownTimer_Text = {}
 					OV_CountdownTimer_Text.text = tostring( OV_CountdownTimer_Text_Number )
 					OV_CountdownTimer_Text.color = Color( 255, 255, 255 )
-					OV_CountdownTimer_Text.time = CurTime() + 2.75
-					OV_CountdownTimer_Text.timeSet = 2.75
+					OV_CountdownTimer_Text.time = CurTime() + 2
+					OV_CountdownTimer_Text.timeSet = 2
 				
 					table.insert( OV_CountdownText, OV_CountdownTimer_Text )
 					surface.PlaySound( "buttons/bell1.wav" )
@@ -498,7 +537,7 @@ function OV_SendInfoText( len )
 	local SentInfoText = {}
 	SentInfoText.text = net.ReadString()
 	SentInfoText.color = net.ReadColor()
-	SentInfoText.time = CurTime() + net.ReadInt( 4 ) + 2
+	SentInfoText.time = CurTime() + net.ReadInt( 4 ) + 1
 	SentInfoText.timeSet = SentInfoText.time - CurTime()
 
 	table.insert( OV_InformationText, SentInfoText )
@@ -690,7 +729,7 @@ function GM:HUDPaint()
 	end
 
 	-- Ranking
-	if ( IsMounted( "cstrike" ) && !OV_Game_PreRound && !OV_Game_EndRound && ( OV_Game_PlayerRank_Position != 0 ) ) then
+	if ( !OV_Game_PreRound && !OV_Game_EndRound && ( OV_Game_PlayerRank_Position != 0 ) ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.DrawRect( 15, ScrH() - 15 - ( 36 * OV_HUD_Scale ), 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
@@ -712,7 +751,7 @@ function GM:HUDPaint()
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.SetMaterial( OV_Material_Radar )
-		surface.DrawTexturedRect( 15, 15, 128 * OV_HUD_Scale, 128 * OV_HUD_Scale )
+		surface.DrawTexturedRect( 15, 15, 128 * OV_HUD_Scale_SuperClamped, 128 * OV_HUD_Scale_SuperClamped )
 	
 		for _, ply in pairs( player.GetAll() ) do
 		
@@ -725,7 +764,7 @@ function GM:HUDPaint()
 				if ( x_diff == 0 ) then x_diff = 0.00001 end
 				if ( y_diff == 0 ) then y_diff = 0.00001 end
 			
-				local iRadarRadius = ( 128 * OV_HUD_Scale ) + 31 - ( 6 * OV_HUD_Scale )
+				local iRadarRadius = ( 128 * OV_HUD_Scale_SuperClamped ) + 31 - ( 6 * OV_HUD_Scale_SuperClamped )
 			
 				local fScale = ( iRadarRadius / 2.56 ) / 1024
 			
@@ -769,13 +808,18 @@ function GM:HUDPaint()
 				
 				end
 			
-				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( math.Clamp( LocalPlayer():GetPos():Distance( ply:GetPos() ), 0, 1024 ), 0, 1024, 200, 10 ) )
+				surface.SetDrawColor( dot_color.r, dot_color.g, dot_color.b, math.Remap( math.Clamp( LocalPlayer():GetPos():Distance( ply:GetPos() ), 0, 1024 ), 0, 1024, 200, 20 ) )
 				surface.SetMaterial( OV_Material_RadarPoint )
-				surface.DrawTexturedRect( ( iRadarRadius / 2 ) + xnew_diff, ( iRadarRadius / 2 ) + ynew_diff, 6 * OV_HUD_Scale, 6 * OV_HUD_Scale )
+				surface.DrawTexturedRect( ( iRadarRadius / 2 ) + xnew_diff, ( iRadarRadius / 2 ) + ynew_diff, 6 * OV_HUD_Scale_SuperClamped, 6 * OV_HUD_Scale_SuperClamped )
 			
 			end
 		
 		end
+	
+		-- Draw a dot in the middle
+		surface.SetDrawColor( 255, 255, 255, 255 )
+		surface.SetMaterial( OV_Material_RadarPoint )
+		surface.DrawTexturedRect( ( 15 + ( 128 * OV_HUD_Scale_SuperClamped ) / 2 ) - ( ( 6 * OV_HUD_Scale_SuperClamped ) / 2 ), ( 15 + ( 128 * OV_HUD_Scale_SuperClamped ) / 2 ) - ( ( 6 * OV_HUD_Scale_SuperClamped ) / 2 ), 6 * OV_HUD_Scale_SuperClamped, 6 * OV_HUD_Scale_SuperClamped )
 	
 	end
 
@@ -789,8 +833,13 @@ function GM:HUDPaint()
 	-- Countdown Text
 	for k, v in pairs( OV_CountdownText ) do
 	
-		draw.SimpleTextOutlined( v.text, "DermaLarge", ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 1, v.timeSet, 0, ScrW() / 1.5 ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 1, 0, 0, ScrW() / 1.5 ), 0, ScrW() ), ScrH() / 2 + 60, Color( v.color.r, v.color.g, v.color.b, v.color.a - math.Remap( v.time - CurTime(), 1, 0, 0, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color( 0, 0, 0, v.color.a - math.Remap( v.time - CurTime(), 1, 0, 0, 255 ) ) )
+		-- Lerp stuff
+		v.x = v.x or ( ScrW() + ScrW() )
 	
+		-- Draw text
+		draw.SimpleTextOutlined( v.text, "DermaLarge", v.x, ScrH() / 2 + 60, Color( v.color.r, v.color.g, v.color.b, v.color.a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color( 0, 0, 0, v.color.a ) )
+	
+		-- Delete when time is up
 		if ( v.time < CurTime() ) then
 		
 			table.remove( OV_CountdownText, k )
@@ -802,8 +851,14 @@ function GM:HUDPaint()
 	-- Information Text
 	for k, v in pairs( OV_InformationText ) do
 	
-		draw.SimpleTextOutlined( v.text, "CloseCaption_Normal", ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 1, v.timeSet, 0, ScrW() / 1.5 ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 1, 0, 0, ScrW() / 1.5 ), 0, ScrW() ), ScrH() / 2 + 60 + ( 40 * k ), Color( v.color.r, v.color.g, v.color.b, v.color.a - math.Remap( v.time - CurTime(), 1, 0, 0, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color( 0, 0, 0, v.color.a - math.Remap( v.time - CurTime(), 1, 0, 0, 255 ) ) )
+		-- Lerp stuff
+		v.x = v.x or ( ScrW() + ScrW() )
+		v.y = v.y or ( ( ScrH() / 2 ) + 60 + ( 40 * k ) )
 	
+		-- Draw text
+		draw.SimpleTextOutlined( v.text, "CloseCaption_Normal", v.x, v.y, Color( v.color.r, v.color.g, v.color.b, v.color.a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color( 0, 0, 0, v.color.a ) )
+	
+		-- Delete when time is up
 		if ( v.time < CurTime() ) then
 		
 			table.remove( OV_InformationText, k )
@@ -828,15 +883,6 @@ function GM:HUDPaint()
 
 	-- Paint death notices
 	hook.Run( "DrawDeathNotice", 0.85, 0.04 )
-
-	-- Use this splash text when the player does not own CSS
-	if ( !IsMounted( "cstrike" ) ) then
-	
-		draw.SimpleText( "YOU ARE PLAYING OPEN VIRUS.", "BudgetLabel", 4, ScrH() - 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
-		draw.SimpleText( "WE ARE NOT AFFILIATED WITH PIXELTAIL!", "BudgetLabel", 4, ScrH() - 30, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
-		draw.SimpleText( "BUY TOWER UNITE TO PLAY THE OFFICIAL VIRUS GAME", "BudgetLabel", 4, ScrH(), Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM )
-	
-	end
 
 end
 
@@ -1013,7 +1059,7 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	
 		local view = {}
 		view.origin = pos
-		view.angles = Angle( ang.p + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.2 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.9 ) ) )
+		view.angles = Angle( ang.p + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.25 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.9 ) ) )
 		view.fov = fov
 		view.znear = zn
 		view.zfar = zf

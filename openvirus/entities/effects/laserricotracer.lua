@@ -21,6 +21,9 @@ function EFFECT:Init( data )
 	effectdata:SetRadius( 6 )
 	util.Effect( "Sparks", effectdata )
 
+	-- Sound
+	sound.Play( "FX_RicochetSound.Ricochet", self.StartPos )
+
 end
 
 function EFFECT:Think()
