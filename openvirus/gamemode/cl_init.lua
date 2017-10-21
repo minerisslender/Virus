@@ -28,6 +28,11 @@ function GM:Initialize()
 	OV_Game_MaxRounds = 0
 
 	OV_Game_Radar_Enabled = true
+	OV_Game_Radar_Ping_Position = 0
+	OV_Game_Radar_Ping_Size = 0
+	OV_Game_Radar_Ping_Time = 0
+	OV_Game_Radar_Ping_TimeSet = 0
+
 	OV_Game_Ranking_Enabled = true
 
 	OV_Game_PlayerRank_Table = {}
@@ -36,7 +41,7 @@ function GM:Initialize()
 
 	-- Global HUD Scale
 	OV_HUD_Scale = math.Clamp( ScrH() * 0.00155, 1, 2 )
-	OV_HUD_Scale_SuperClamped = math.Clamp( ScrH() * 0.00155, 1, 1.25 )
+	OV_HUD_Scale_SuperClamped = math.Clamp( ScrH() * 0.00155, 1, 1.3 )
 
 	OV_HUD_Scale_PlayerRank = "TargetIDSmall"
 	if ( OV_HUD_Scale >= 1.25 ) then OV_HUD_Scale_PlayerRank = "TargetID" end
@@ -405,7 +410,7 @@ function GM:Tick()
 		v.y = ( ScrH() / 2 ) + 60 + ( 40 * k )
 		if ( v.lerp ) then
 		
-			v.x = ( v.x * 0.2 ) + ( v.lerp.x * 0.8 )
+			v.x = ( v.x * 0.15 ) + ( v.lerp.x * 0.85 )
 			v.y = ( v.y * 0.3 ) + ( v.lerp.y * 0.7 )
 		
 		end
@@ -749,10 +754,26 @@ function GM:HUDPaint()
 	-- Radar
 	if ( !OV_Game_PreRound && !OV_Game_EndRound && OV_Game_Radar_Enabled && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 	
+		-- Draw the circle
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.SetMaterial( OV_Material_Radar )
 		surface.DrawTexturedRect( 15, 15, 128 * OV_HUD_Scale_SuperClamped, 128 * OV_HUD_Scale_SuperClamped )
 	
+		-- Draw a ping circle
+		if ( OV_Game_Radar_Ping_Time < CurTime() ) then
+		
+			OV_Game_Radar_Ping_Time = CurTime() + 2
+			OV_Game_Radar_Ping_TimeSet = OV_Game_Radar_Ping_Time - CurTime()
+		
+		end
+		OV_Game_Radar_Ping_Position = ( 15 + ( 128 * OV_HUD_Scale_SuperClamped ) / 2 ) - ( ( math.Remap( OV_Game_Radar_Ping_Time - CurTime(), 1, 2, 128, 0 ) * OV_HUD_Scale_SuperClamped ) / 2 )
+		OV_Game_Radar_Ping_Size = math.Remap( OV_Game_Radar_Ping_Time - CurTime(), 1, 2, 128, 0 ) * OV_HUD_Scale_SuperClamped
+	
+		surface.SetDrawColor( 255, 255, 255, math.Clamp( math.Remap( OV_Game_Radar_Ping_Time - CurTime(), 1, 2, 0, 100 ), 0, 100 ) )
+		surface.SetMaterial( OV_Material_Radar )
+		surface.DrawTexturedRect( OV_Game_Radar_Ping_Position, OV_Game_Radar_Ping_Position, OV_Game_Radar_Ping_Size, OV_Game_Radar_Ping_Size )
+	
+		-- Begin putting dots on the radar
 		for _, ply in pairs( player.GetAll() ) do
 		
 			if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply != LocalPlayer() ) ) then
@@ -800,7 +821,7 @@ function GM:HUDPaint()
 				xnew_diff = ( xnew_diff * fScale )
 				ynew_diff = ( ynew_diff * fScale )
 			
-				-- Draw the radar here
+				-- Draw the dots
 				local dot_color = Color( 255, 255, 255 )
 				if ( LocalPlayer():Team() != ply:Team() ) then
 				
@@ -815,11 +836,6 @@ function GM:HUDPaint()
 			end
 		
 		end
-	
-		-- Draw a dot in the middle
-		surface.SetDrawColor( 255, 255, 255, 255 )
-		surface.SetMaterial( OV_Material_RadarPoint )
-		surface.DrawTexturedRect( ( 15 + ( 128 * OV_HUD_Scale_SuperClamped ) / 2 ) - ( ( 6 * OV_HUD_Scale_SuperClamped ) / 2 ), ( 15 + ( 128 * OV_HUD_Scale_SuperClamped ) / 2 ) - ( ( 6 * OV_HUD_Scale_SuperClamped ) / 2 ), 6 * OV_HUD_Scale_SuperClamped, 6 * OV_HUD_Scale_SuperClamped )
 	
 	end
 

@@ -336,6 +336,21 @@ function GM:Think()
 end
 
 
+-- Called when an entity takes damage
+function GM:EntityTakeDamage( ent, info )
+
+	-- Infected blood effects
+	if ( ov_sv_infected_blood:GetBool() && ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) ) then
+	
+		local bloodeffect = EffectData()
+		bloodeffect:SetOrigin( info:GetDamagePosition() )
+		util.Effect( "infectedblood", bloodeffect )
+	
+	end
+
+end
+
+
 -- Called when the player is hurt
 function GM:PlayerHurt( ply, attacker, health, dmg )
 
@@ -355,15 +370,6 @@ function GM:PlayerHurt( ply, attacker, health, dmg )
 	if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) ) then
 	
 		ply:SetNWInt( "InfectedLastHurt", CurTime() + 4 )
-	
-	end
-
-	-- Infected blood effects
-	if ( ov_sv_infected_blood:GetBool() ) then
-	
-		local bloodeffect = EffectData()
-		bloodeffect:SetOrigin( ply:LocalToWorld( ply:OBBCenter() ) )
-		util.Effect( "infectedblood", bloodeffect )
 	
 	end
 
