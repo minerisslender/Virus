@@ -47,7 +47,7 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "Weapon_P90.Single" )
 
-    self:ShootBullet( 9, 1, 0.025 )
+    self:ShootBullet( 11, 1, 0.025 )
 
     self:TakePrimaryAmmo( 1 )
 

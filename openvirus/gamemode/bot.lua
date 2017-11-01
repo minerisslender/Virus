@@ -66,7 +66,7 @@ function BOT_PlayerSpawn( ply )
 	
 		ply.BotPlayerAttackSpeed = CurTime()
 		ply.BotPlayerReactionSpeed = CurTime()
-		ply.BotPlayerReactionSkill = math.Rand( 0.1, 1 )
+		ply.BotPlayerReactionSkill = math.Rand( 1, 2 )
 		ply.BotPlayerSkill = math.random( 16, 32 )
 		timer.Simple( 0.1, function() if ( ply && ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && ( #ply:GetWeapons() > 0 ) ) then ply.BotPlayerPreferredWeapon = table.Random( ply:GetWeapons() ) end end )
 		ply.BotPlayerUseSLAM = tobool( math.random( 0, 1 ) )

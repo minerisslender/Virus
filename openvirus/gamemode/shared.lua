@@ -20,7 +20,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev26 (Public Alpha)"
+GM.Version  =   "rev27 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -65,10 +65,10 @@ end
 -- Scale the player damage
 function GM:ScalePlayerDamage( ply, hitgroup, info )
 
-	-- Everything else
+	-- Scale stuff
 	if ( hitgroup == HITGROUP_HEAD ) then
 	
-		info:ScaleDamage( 1.5 )
+		info:ScaleDamage( 2 )
 	
 	elseif ( hitgroup == HITGROUP_LEFTLEG ) then
 	

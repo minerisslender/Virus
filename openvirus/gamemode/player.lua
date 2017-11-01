@@ -343,12 +343,12 @@ end
 function GM:SetupPlayerVisibility( ply, viewent )
 
 	-- Every other player will be added to visibility
-	-- Note that this only works when there are 12 players or below due to limitations
-	if ( player.GetCount() <= 12 ) then
+	-- Note that this only works when there are 16 players or below due to limitations
+	if ( player.GetCount() <= 16 ) then
 	
 		for _, ply2 in pairs( player.GetAll() ) do
 		
-			if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_INFECTED || ply2:Team() == TEAM_SURVIVOR ) && !ply2:Visible( ply ) && ( ply2 != ply ) ) then
+			if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_INFECTED || ply2:Team() == TEAM_SURVIVOR ) && !ply2:TestPVS( ply ) ) then
 			
 				AddOriginToPVS( ply2:EyePos() )
 			

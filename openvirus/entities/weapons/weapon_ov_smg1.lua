@@ -45,7 +45,7 @@ function SWEP:PrimaryAttack()
 
     self.Weapon:EmitSound( "Weapon_SMG1.Single" )
 
-    self:ShootBullet( 6, 1, math.random( 2, 5 ) / 100 )
+    self:ShootBullet( 12, 1, math.random( 2, 5 ) / 100 )
 
     self:TakePrimaryAmmo( 1 )
 

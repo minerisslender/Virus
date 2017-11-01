@@ -35,40 +35,40 @@ game.AddAmmoType( {
 
 -- M3 ammo
 game.AddAmmoType( {
-	force = 8,
+	force = 10,
 	name = "OV_M3",
-	npcdmg = 8,
-	plydmg = 8,
+	npcdmg = 10,
+	plydmg = 10,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 
 
 -- MP5 ammo
 game.AddAmmoType( {
-	force = 12,
+	force = 16,
 	name = "OV_MP5",
-	npcdmg = 12,
-	plydmg = 12,
+	npcdmg = 16,
+	plydmg = 16,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 
 
 -- P90 ammo
 game.AddAmmoType( {
-	force = 9,
+	force = 11,
 	name = "OV_P90",
-	npcdmg = 9,
-	plydmg = 9,
+	npcdmg = 11,
+	plydmg = 11,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 
 
 -- Pistol ammo
 game.AddAmmoType( {
-	force = 15,
+	force = 16,
 	name = "OV_Pistol",
-	npcdmg = 15,
-	plydmg = 15,
+	npcdmg = 16,
+	plydmg = 16,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 
@@ -95,9 +95,9 @@ game.AddAmmoType( {
 
 -- XM1014 ammo
 game.AddAmmoType( {
-	force = 7,
+	force = 8,
 	name = "OV_XM1014",
-	npcdmg = 7,
-	plydmg = 7,
+	npcdmg = 8,
+	plydmg = 8,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
