@@ -20,7 +20,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev28 (Public Alpha)"
+GM.Version  =   "rev29 (Public Alpha)"
 
 
 -- Some global stuff here

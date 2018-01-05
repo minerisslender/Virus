@@ -83,7 +83,7 @@ function GM:Initialize()
 	ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
 	ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
 	ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
-	if ( system.IsWindows() ) then ov_cl_round_music_loop = CreateClientConVar( "ov_cl_round_music_loop", "1", true, false ) end -- This is only available for Windows due to SoundDuration issues on other systems
+	if ( system.IsWindows() ) then ov_cl_round_music_loop = CreateClientConVar( "ov_cl_round_music_loop", "0", true, false ) end -- This is only available for Windows due to SoundDuration issues on other systems
 	ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
 
 	-- ConCommands
@@ -224,7 +224,7 @@ function GM:InitializeSounds()
 		OV_Sounds_InRound[ k ][ "sound" ]:SetSoundLevel( 0 )
 		OV_Sounds_InRound[ k ][ "sound" ]:Stop()
 	
-		OV_Sounds_InRound[ k ][ "duration" ] = SoundDuration( "openvirus/music/inround/"..v ) / 2
+		OV_Sounds_InRound[ k ][ "duration" ] = SoundDuration( "openvirus/music/inround/"..v )
 	
 	end
 
@@ -240,7 +240,7 @@ function GM:InitializeSounds()
 		OV_Sounds_LastSurvivor[ k ][ "sound" ]:SetSoundLevel( 0 )
 		OV_Sounds_LastSurvivor[ k ][ "sound" ]:Stop()
 	
-		OV_Sounds_LastSurvivor[ k ][ "duration" ] = SoundDuration( "openvirus/music/laststanding/"..v ) / 2
+		OV_Sounds_LastSurvivor[ k ][ "duration" ] = SoundDuration( "openvirus/music/laststanding/"..v )
 	
 	end
 
