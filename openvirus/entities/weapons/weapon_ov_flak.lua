@@ -29,6 +29,8 @@ SWEP.DrawCrosshair = true
 SWEP.BounceWeaponIcon = false
 SWEP.DrawWeaponInfoBox = false
 
+local WeaponSound = Sound( "weapons/flaregun/fire.wav" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -43,7 +45,7 @@ function SWEP:PrimaryAttack()
 
 	if ( !self:CanPrimaryAttack() ) then return end
 
-	self.Weapon:EmitSound( "weapons/flaregun/fire.wav", 90, 90 )
+	self.Weapon:EmitSound( WeaponSound, 90, 90 )
 	
 	self:ShootBullet( 50, 6, 0.06 )
 	

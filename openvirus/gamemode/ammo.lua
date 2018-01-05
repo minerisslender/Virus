@@ -65,20 +65,20 @@ game.AddAmmoType( {
 
 -- Pistol ammo
 game.AddAmmoType( {
-	force = 16,
+	force = 18,
 	name = "OV_Pistol",
-	npcdmg = 16,
-	plydmg = 16,
+	npcdmg = 18,
+	plydmg = 18,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 
 
 -- Silenced Pistol ammo
 game.AddAmmoType( {
-	force = 18,
+	force = 16,
 	name = "OV_SilencedPistol",
-	npcdmg = 18,
-	plydmg = 18,
+	npcdmg = 16,
+	plydmg = 16,
 	tracer = TRACER_LINE_AND_WHIZ
 } )
 

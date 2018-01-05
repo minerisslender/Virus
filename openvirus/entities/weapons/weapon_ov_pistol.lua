@@ -31,6 +31,8 @@ SWEP.DrawWeaponInfoBox = false
 
 SWEP.CSMuzzleFlashes = true
 
+local WeaponSound = Sound( "Weapon_P228.Single" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -45,9 +47,9 @@ function SWEP:PrimaryAttack()
 
     if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "Weapon_P228.Single" )
+    self.Weapon:EmitSound( WeaponSound )
 
-    self:ShootBullet( 16, 1, 0.025 )
+    self:ShootBullet( 18, 1, 0.025 )
 
     self:TakePrimaryAmmo( 1 )
 

@@ -20,12 +20,12 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownman2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev27 (Public Alpha)"
+GM.Version  =   "rev28 (Public Alpha)"
 
 
 -- Some global stuff here
 GM.OV_Survivor_Speed = 300
-GM.OV_Survivor_AdrenSpeed = 480
+GM.OV_Survivor_AdrenSpeed = 440
 GM.OV_Infected_Health = 100
 GM.OV_Infected_EnrageHealth = 400
 GM.OV_Infected_Speed = 380
@@ -37,21 +37,21 @@ GM.OV_Infected_Model = "models/player/corpse1.mdl"
 function GM:PlayerShouldTakeDamage( ply, attacker )
 
 	-- Block damaging players
-	if ( ply:IsValid() && ( ply:Team() == TEAM_SURVIVOR ) && attacker:IsValid() && ( attacker:GetClass() != "trigger_hurt" ) ) then
+	if ( IsValid( ply ) && ( ply:Team() == TEAM_SURVIVOR ) && IsValid( attacker ) && ( attacker:GetClass() != "trigger_hurt" ) ) then
 	
 		return false
 	
 	end
 
 	-- Players cannot kill teammates
-	if ( ply:IsValid() && attacker:IsValid() && attacker:IsPlayer() && ( ply:Team() == attacker:Team() ) ) then
+	if ( IsValid( ply ) && IsValid( attacker ) && attacker:IsPlayer() && ( ply:Team() == attacker:Team() ) ) then
 	
 		return false
 	
 	end
 
 	-- One infected player cannot be damaged in non infection mode
-	if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ply:IsValid() && ( ply:Team() == TEAM_INFECTED ) && ( ( ply:Deaths() > 2 ) || timer.Exists( "OV_RoundTimer" ) && ( timer.TimeLeft( "OV_RoundTimer" ) <= ( OV_Game_MainRoundTimerCount * 0.75 ) ) ) && !ply:GetInfectionStatus() ) then
+	if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( ply ) && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 2 ) && !ply:GetInfectionStatus() ) then
 	
 		return false
 	
@@ -68,19 +68,51 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 	-- Scale stuff
 	if ( hitgroup == HITGROUP_HEAD ) then
 	
-		info:ScaleDamage( 2 )
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		
+			info:ScaleDamage( 1 )
+		
+		else
+		
+			info:ScaleDamage( 2 )
+		
+		end
 	
 	elseif ( hitgroup == HITGROUP_LEFTLEG ) then
 	
-		info:ScaleDamage( 0.75 )
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		
+			info:ScaleDamage( 0.25 )
+		
+		else
+		
+			info:ScaleDamage( 0.5 )
+		
+		end
 	
 	elseif ( hitgroup == HITGROUP_RIGHTLEG ) then
 	
-		info:ScaleDamage( 0.75 )
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		
+			info:ScaleDamage( 0.25 )
+		
+		else
+		
+			info:ScaleDamage( 0.5 )
+		
+		end
 	
 	else
 	
-		info:ScaleDamage( 1 )
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		
+			info:ScaleDamage( 0.5 )
+		
+		else
+		
+			info:ScaleDamage( 1 )
+		
+		end
 	
 	end
 
@@ -109,21 +141,21 @@ end
 function GM:ShouldCollide( ent1, ent2 )
 
 	-- PvP Collision rule
-	if ( ( ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ( ent1:Team() == ent2:Team() ) ) || ( ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ( ent2:Team() == ent1:Team() ) ) ) then
+	if ( ( IsValid( ent1 ) && ent1:IsPlayer() && ent1:Alive() && IsValid( ent2 ) && ent2:IsPlayer() && ent2:Alive() && ( ent1:Team() == ent2:Team() ) ) || ( IsValid( ent2 ) && ent2:IsPlayer() && ent2:Alive() && IsValid( ent1 ) && ent1:IsPlayer() && ent1:Alive() && ( ent2:Team() == ent1:Team() ) ) ) then
 	
 		return false
 	
 	end
 
 	-- SLAMs should not collide with players
-	if ( ( ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ent2:IsValid() && ( ent2:GetClass() == "ent_ov_slam" ) ) || ( ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ent1:IsValid() && ( ent1:GetClass() == "ent_ov_slam" ) ) ) then
+	if ( ( IsValid( ent1 ) && ent1:IsPlayer() && ent1:Alive() && IsValid( ent2 ) && ( ent2:GetClass() == "ent_ov_slam" ) ) || ( IsValid( ent2 ) && ent2:IsPlayer() && ent2:Alive() && IsValid( ent1 ) && ( ent1:GetClass() == "ent_ov_slam" ) ) ) then
 	
 		return false
 	
 	end
 
 	-- Bot navigation entity
-	if ( ( ent1:IsValid() && ent1:IsPlayer() && ent1:Alive() && ent2:IsValid() && ( ent2:GetClass() == "ent_bot_navigation" ) ) || ( ent2:IsValid() && ent2:IsPlayer() && ent2:Alive() && ent1:IsValid() && ( ent1:GetClass() == "ent_bot_navigation" ) ) ) then
+	if ( ( IsValid( ent1 ) && ent1:IsPlayer() && ent1:Alive() && IsValid( ent2 ) && ( ent2:GetClass() == "ent_bot_navigation" ) ) || ( IsValid( ent2 ) && ent2:IsPlayer() && ent2:Alive() && IsValid( ent1 ) && ( ent1:GetClass() == "ent_bot_navigation" ) ) ) then
 	
 		return false
 	

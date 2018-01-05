@@ -32,6 +32,8 @@ SWEP.Used = false
 SWEP.DeployTime = 0
 SWEP.RemoveTime = 0
 
+local WeaponSound = Sound( "physics/flesh/flesh_impact_bullet3.wav" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -96,7 +98,7 @@ end
 -- Think
 function SWEP:Think()
 
-	if ( self.Owner && self.Owner:IsValid() && self.Owner:IsBot() && ( self.Owner:GetActiveWeapon() && self.Owner:GetActiveWeapon():IsValid() && ( self.Owner:GetActiveWeapon() == self.Entity ) ) ) then
+	if ( IsValid( self.Owner ) && self.Owner:IsBot() && ( self.Owner:GetActiveWeapon() && self.Owner:GetActiveWeapon():IsValid() && ( self.Owner:GetActiveWeapon() == self.Entity ) ) ) then
 	
 		self:PrimaryAttack()
 	
@@ -115,13 +117,13 @@ function SWEP:Think()
 		
 		end
 	
-		if ( SERVER && self.OwnerWeaponList && self.OwnerWeaponList[ 1 ] && self.OwnerWeaponList[ 1 ]:IsValid() ) then self.Owner:SelectWeapon( self.OwnerWeaponList[ 1 ]:GetClass() ) end
+		if ( SERVER && self.OwnerWeaponList && IsValid( self.OwnerWeaponList[ 1 ] ) ) then self.Owner:SelectWeapon( self.OwnerWeaponList[ 1 ]:GetClass() ) end
 	
 		if ( SERVER ) then
 		
 			self.Owner.timeAdrenalineStatus = CurTime() + 15
 			self.Owner:SetAdrenalineStatus( 1 )
-			self.Owner:EmitSound( "physics/flesh/flesh_impact_bullet3.wav", 75, 90 )
+			self.Owner:EmitSound( WeaponSound, 75, 90 )
 		
 			self:Remove()
 		

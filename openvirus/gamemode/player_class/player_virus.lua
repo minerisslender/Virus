@@ -29,7 +29,7 @@ function PLAYER:SetModel()
 	local groups = self.Player:GetInfo( "cl_playerbodygroups" )
 	if ( groups == nil ) then groups = "" end
 	local groups = string.Explode( " ", groups )
-	for k = 0, self.Player:GetNumBodyGroups() - 1 do
+	for k = 0, ( self.Player:GetNumBodyGroups() - 1 ) do
 	
 		self.Player:SetBodygroup( k, tonumber( groups[ k + 1 ] ) or 0 )
 	

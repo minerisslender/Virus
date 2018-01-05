@@ -1,6 +1,6 @@
--- Laser Rifle
+-- Laser Rifle (Hybrid)
 
-SWEP.PrintName = "#weapon_ov_laserrifle"
+SWEP.PrintName = "#weapon_ov_laserriflehybrid"
 SWEP.UseHands = true
 
 SWEP.ViewModelFOV = 58
@@ -19,6 +19,8 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
+SWEP.Secondary.Charge = 0
+SWEP.Secondary.Target = nil
 
 SWEP.Weight = 3
 SWEP.AutoSwitchTo = false
@@ -34,6 +36,8 @@ SWEP.DrawWeaponInfoBox = false
 local WeaponSound = Sound( "weapons/gauss/fire1.wav" )
 local OverChargeSound = Sound( "npc/attack_helicopter/aheli_damaged_alarm1.wav" )
 local ReChargeSound = Sound( "weapons/physcannon/physcannon_charge.wav" )
+local BlastSound = Sound( "Weapon_Mortar.Impact" )
+local BlastChargeSound = Sound( "Weapon_AR2.Reload_Rotate" )
 
 
 -- Initialize the weapon
@@ -46,6 +50,8 @@ end
 
 -- Primary attack
 function SWEP:PrimaryAttack()
+
+	if ( self.Secondary.Charge > 0 ) then return end
 
 	if ( self.Primary.Charge < 100 ) then
 	
@@ -91,7 +97,7 @@ function SWEP:Think()
 	-- Primary charge
 	if ( IsValid( self.Owner ) && self.Owner:IsPlayer() && self.Owner:Alive() ) then
 	
-		if ( !self.Owner:KeyDown( IN_ATTACK ) ) then
+		if ( !self.Owner:KeyDown( IN_ATTACK ) || ( self.Secondary.Charge > 0 ) ) then
 		
 			if ( ( ( self:GetNextPrimaryFire() + 1 ) < CurTime() ) && ( self.Primary.Charge > 0 ) ) then
 			
@@ -109,6 +115,79 @@ function SWEP:Think()
 					self.Primary.Charge = 0
 				
 				end
+			
+			end
+		
+		end
+	
+	end
+
+	-- Secondary charge
+	if ( IsValid( self.Owner ) && self.Owner:IsPlayer() && self.Owner:Alive() && ( self.Primary.Charge <= 0 ) ) then
+	
+		if ( self.Owner:KeyDown( IN_ATTACK2 ) ) then
+		
+			if ( CLIENT && IsFirstTimePredicted() ) then util.ScreenShake( self.Owner:EyePos(), self.Secondary.Charge / 100, 4, 0.1, 4 ) end
+		
+			if ( self.Secondary.Charge < 100 ) then
+			
+				if ( self.Secondary.Charge <= 0 ) then self.Weapon:EmitSound( BlastChargeSound ) end
+			
+				if ( IsFirstTimePredicted() ) then self.Secondary.Charge = self.Secondary.Charge + 2 end
+			
+				if ( self.Secondary.Charge > 100 ) then
+				
+					self.Secondary.Charge = 100
+				
+				end
+			
+			end
+		
+		else
+		
+			if ( self.Secondary.Charge >= 100 ) then
+			
+				if ( IsFirstTimePredicted() ) then
+				
+					if ( ( CLIENT && self.Owner:ShouldDrawLocalPlayer() ) || SERVER ) then
+					
+						local soniceffect = EffectData()
+						soniceffect:SetOrigin( self:GetAttachment( 1 ).Pos )
+						util.Effect( "cball_explode", soniceffect )
+					
+					else
+					
+						local soniceffect = EffectData()
+						soniceffect:SetOrigin( self.Owner:GetViewModel():GetAttachment( 1 ).Pos )
+						util.Effect( "cball_explode", soniceffect )
+					
+					end
+				
+				end
+			
+				self.Weapon:EmitSound( BlastSound )
+			
+				self.Owner:LagCompensation( true )
+			
+				self.Secondary.Target = self.Owner:GetEyeTrace().Entity
+				self.Secondary.TargetDistance = self.Secondary.Target:GetPos():Distance( self.Owner:GetPos() )
+			
+				self.Owner:LagCompensation( false )
+			
+				self.Owner:ViewPunch( Angle( -16, 0, 0 ) )
+			
+				if ( SERVER && IsValid( self.Secondary.Target ) && self.Secondary.Target:IsPlayer() && self.Secondary.Target:Alive() && ( self.Secondary.Target:Team() == TEAM_INFECTED ) && ( self.Secondary.TargetDistance <= 512 ) ) then
+				
+					local calculated_velocity = self.Secondary.Target:GetPos() - self.Owner:GetPos()
+					self.Secondary.Target:SetVelocity( Vector( calculated_velocity.x, calculated_velocity.y, 16 ) * 16 )
+				
+				end
+			
+			end
+		
+			if ( self.Secondary.Charge > 0 ) then
+			
+				if ( IsFirstTimePredicted() ) then self.Secondary.Charge = 0 end
 			
 			end
 		
@@ -156,6 +235,13 @@ if ( CLIENT ) then
 		
 			draw.RoundedBox( 2, ScrW() / 2 - ( ScrH() * 0.25 / 2 ), ScrH() / 1.1, ScrH() * 0.25, ScrH() * 0.025, Color( 0, 0, 0, 200 ) )
 			draw.RoundedBox( 1, ScrW() / 2 - ( ScrH() * 0.25 / 2 ) + 2, ScrH() / 1.1 + 2, ( ScrH() * 0.25 - 4 ) * ( self.Primary.Charge / 100 ), ScrH() * 0.025 - 4, Color( 255, math.Remap( self.Primary.Charge, 0, 100, 255, 0 ), math.Remap( self.Primary.Charge, 0, 100, 255, 0 ) ), 200 )
+		
+		end
+	
+		if ( self.Secondary.Charge > 0 ) then
+		
+			draw.RoundedBox( 2, ScrW() / 2 - ( ScrH() * 0.25 / 2 ), ScrH() / 1.05, ScrH() * 0.25, ScrH() * 0.025, Color( 0, 0, 0, 200 ) )
+			draw.RoundedBox( 1, ScrW() / 2 - ( ScrH() * 0.25 / 2 ) + 2, ScrH() / 1.05 + 2, ( ScrH() * 0.25 - 4 ) * ( self.Secondary.Charge / 100 ), ScrH() * 0.025 - 4, Color( 0, 255, 255 ), 200 )
 		
 		end
 	

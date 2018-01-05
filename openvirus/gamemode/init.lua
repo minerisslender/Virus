@@ -28,12 +28,14 @@ function GM:Initialize()
 	OV_Game_WeaponLoadout_Shotguns = {}
 	OV_Game_WeaponLoadout_RemoveSelected = ""
 
-	OV_Game_LastRandomChosenInfected = 0
+	OV_Game_LastRandomChosenInfected = {}
 
 	OV_Game_PlayerRank_Table = {}
 	OV_Game_PlayerRank_First = 0
 	OV_Game_PlayerRank_Second = 0
 	OV_Game_PlayerRank_Third = 0
+
+	SetGlobalBool( "OV_Game_PreventEnraged", false ) -- Used to prevent further enraged states
 
 	-- Network Strings
 	util.AddNetworkString( "OV_UpdateRoundStatus" )
@@ -42,7 +44,6 @@ function GM:Initialize()
 	util.AddNetworkString( "OV_ClientsideInfect" )
 	util.AddNetworkString( "OV_SendInfoText" )
 	util.AddNetworkString( "OV_SetMusic" )
-	util.AddNetworkString( "OV_CStrikeValidation" )
 	util.AddNetworkString( "OV_ClientInitializedMusic" )
 	util.AddNetworkString( "OV_SettingsEnabled" )
 
@@ -56,15 +57,12 @@ function GM:Initialize()
 	ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
 	ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "256", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
 	ov_sv_infected_blood = CreateConVar( "ov_sv_infected_blood", "1", FCVAR_ARCHIVE, "Enable the infected blood effects." )
-	ov_sv_infected_specific_model = CreateConVar( "ov_sv_infected_specific_model", "1", FCVAR_NOTIFY, "Force infected players to have a specific model with the GAMEMODE.OV_Infected_Model function." )
-	ov_sv_survivor_setup_hands = CreateConVar( "ov_sv_survivor_setup_hands", "1", FCVAR_ARCHIVE, "Call SetupHands for survivors. Disabling this means no hands for weapon viewmodels." )
 	ov_sv_survivor_css_hands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
-	ov_sv_allow_non_css_owners = CreateConVar( "ov_sv_allow_non_css_owners", "1", FCVAR_NOTIFY, "Players who don't own CS:S will be allowed to play." )
 	ov_sv_enable_player_radar = CreateConVar( "ov_sv_enable_player_radar", "1", FCVAR_NOTIFY, "Players can see the radar." )
 	ov_sv_enable_player_ranking = CreateConVar( "ov_sv_enable_player_ranking", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
 
 	-- ConCommands
-	concommand.Add( "invwep", function( ply, cmd, args, argstring ) if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then ply:SelectWeapon( argstring ) end end )
+	concommand.Add( "invwep", function( ply, cmd, args, argstring ) if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then ply:SelectWeapon( argstring ) end end )
 	concommand.Add( "ov_net_update", function( ply )
 	
 		if ( OV_Game_InRound ) then
@@ -113,7 +111,7 @@ function OV_ClientsideInfect( len, ply )
 	if ( !OV_Game_InRound ) then return end
 
 	local target_ply = net.ReadEntity()
-	if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() && target_ply && target_ply:IsValid() && target_ply:IsPlayer() && target_ply:Alive() && ( target_ply:Team() == TEAM_SURVIVOR ) ) then
+	if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() && IsValid( target_ply ) && target_ply:IsPlayer() && target_ply:Alive() && ( target_ply:Team() == TEAM_SURVIVOR ) ) then
 	
 		-- Validate the distance between the players
 		if ( ply:GetPos():Distance( target_ply:GetPos() ) <= ov_sv_infection_clientside_valid_distance:GetFloat() ) then
@@ -128,35 +126,10 @@ end
 net.Receive( "OV_ClientsideInfect", OV_ClientsideInfect )
 
 
--- Client has sent us information about CStrike
-function OV_CStrikeValidation( len, ply )
-
-	if ( ov_sv_allow_non_css_owners:GetBool() || net.ReadBool() ) then
-	
-		ply.excludeFromGame = false
-	
-		ply:ChatPrint( "Welcome to open Virus!" )
-		ply:ChatPrint( "This is not affiliated with PixelTail." )
-		ply:ChatPrint( "Version: "..GAMEMODE.Version )
-	
-	else
-	
-		ply.excludeFromGame = true
-		ply:Spawn()
-	
-		ply:ChatPrint( "We recommend you buy Counter-Strike: Source to play this gamemode." )
-		ply:ChatPrint( "OR, you can buy Tower Unite to play the official Virus." )
-	
-	end
-
-end
-net.Receive( "OV_CStrikeValidation", OV_CStrikeValidation )
-
-
 -- Client has initialized music
 function OV_ClientInitializedMusic( len, ply )
 
-	if ( !OV_Game_EndRound && ply && ply:IsValid() ) then
+	if ( !OV_Game_EndRound && IsValid( ply ) ) then
 	
 		OV_SetMusic( 0, ply )
 	
@@ -192,7 +165,7 @@ net.Receive( "OV_ClientInitializedMusic", OV_ClientInitializedMusic )
 function OV_SetMusic( int, ply )
 
 	-- Send to a specific player instead
-	if ( ply && ply:IsValid() && ply:IsPlayer() ) then
+	if ( IsValid( ply ) && ply:IsPlayer() ) then
 	
 		net.Start( "OV_SetMusic" )
 			net.WriteInt( int, 4 )
@@ -217,7 +190,7 @@ function GM:Think()
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
 		
-			if ( ply:IsValid() && ply:Alive() && !ply:GetInfectionStatus() && ( ply.timeInfectionStatus < CurTime() ) ) then
+			if ( IsValid( ply ) && ply:Alive() && !ply:GetInfectionStatus() && ( ply.timeInfectionStatus < CurTime() ) ) then
 				
 				ply:SetInfectionStatus( 1 )
 				
@@ -232,7 +205,7 @@ function GM:Think()
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ply:IsValid() && ply:GetAdrenalineStatus() && ( ply.timeAdrenalineStatus < CurTime() ) ) then
+			if ( IsValid( ply ) && ply:GetAdrenalineStatus() && ( ply.timeAdrenalineStatus < CurTime() ) ) then
 			
 				ply:SetAdrenalineStatus( 0 )
 			
@@ -247,7 +220,7 @@ function GM:Think()
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
 		
-			if ( ply:IsValid() && ply:GetEnragedStatus() ) then
+			if ( IsValid( ply ) && ply:GetEnragedStatus() ) then
 			
 				ply:SetEnragedStatus( 0 )
 			
@@ -255,14 +228,16 @@ function GM:Think()
 		
 		end
 	
+		SetGlobalBool( "OV_Game_PreventEnraged", true )
+	
 	end
 
 	-- Last survivor engaged
-	if ( OV_Game_InRound && !OV_Game_LastSurvivor && ( team.NumPlayers( TEAM_SURVIVOR ) < 2 ) ) then
+	if ( OV_Game_InRound && !OV_Game_LastSurvivor && ( team.NumPlayers( TEAM_SURVIVOR ) <= 1 ) ) then
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ply:IsValid() && ply:Alive() ) then
+			if ( IsValid( ply ) && ply:Alive() ) then
 			
 				OV_Game_LastSurvivor = true
 			
@@ -284,21 +259,17 @@ function GM:Think()
 	end
 
 	-- Bots do not have clientside infection check or we are forcing serverside infection
-	if ( OV_Game_InRound ) then
+	if ( OV_Game_InRound && ( ( #player.GetBots() > 0 ) || ov_sv_infection_serverside_only:GetBool() ) ) then
 	
-		if ( ( #player.GetBots() > 0 ) || ov_sv_infection_serverside_only:GetBool() ) then
+		for _, ply in pairs( player.GetAll() ) do
 		
-			for _, ply in pairs( player.GetAll() ) do
+			if ( IsValid( ply ) && ( ply:IsBot() || ov_sv_infection_serverside_only:GetBool() ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
 			
-				if ( ply:IsValid() && ( ply:IsBot() || ov_sv_infection_serverside_only:GetBool() ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
+				for _, ent in pairs( ents.FindInSphere( ply:EyePos() - Vector( 0, 0, 16 ), 8 ) ) do
 				
-					for _, ent in pairs( ents.FindInSphere( ply:EyePos() - Vector( 0, 0, 16 ), 8 ) ) do
+					if ( IsValid( ent ) && ent:IsPlayer() && ( ent:Health() > 0 ) && ( ent:Team() == TEAM_SURVIVOR ) ) then
 					
-						if ( ent:IsValid() && ent:IsPlayer() && ( ent:Health() > 0 ) && ( ent:Team() == TEAM_SURVIVOR ) ) then
-						
-							ent:InfectPlayer( ply )
-						
-						end
+						ent:InfectPlayer( ply )
 					
 					end
 				
@@ -311,11 +282,11 @@ function GM:Think()
 	end
 
 	-- Select a random person to be infected
-	if ( OV_Game_InRound && ( team.NumPlayers( TEAM_INFECTED ) == 0 ) ) then
+	if ( OV_Game_InRound && ( team.NumPlayers( TEAM_INFECTED ) < 1 ) ) then
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ( team.NumPlayers( TEAM_INFECTED ) == 0 ) && ply:IsValid() && ( ply:UserID() != OV_Game_LastRandomChosenInfected ) ) then
+			if ( ( team.NumPlayers( TEAM_INFECTED ) < 1 ) && IsValid( ply ) && !table.HasValue( OV_Game_LastRandomChosenInfected, ply:SteamID() ) ) then
 			
 				if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) * 2 ) == ( team.NumPlayers( TEAM_SURVIVOR ) * 2 ) ) then
 				
@@ -323,7 +294,7 @@ function GM:Think()
 				
 					if ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) then BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_stinger.wav\" )" ) end
 				
-					OV_Game_LastRandomChosenInfected = ply:UserID()
+					if ( !ply:IsBot() ) then table.insert( OV_Game_LastRandomChosenInfected, ply:SteamID() ) end
 				
 				end
 			
@@ -340,7 +311,7 @@ end
 function GM:EntityTakeDamage( ent, info )
 
 	-- Infected blood effects
-	if ( ov_sv_infected_blood:GetBool() && ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) ) then
+	if ( ov_sv_infected_blood:GetBool() && IsValid( ent ) && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) ) then
 	
 		local bloodeffect = EffectData()
 		bloodeffect:SetOrigin( info:GetDamagePosition() )
@@ -355,7 +326,7 @@ end
 function GM:PlayerHurt( ply, attacker, health, dmg )
 
 	-- Send damage values to the client
-	if ( attacker:IsValid() && attacker:IsPlayer() && ( attacker:Health() > 0 ) && ( attacker:Team() == TEAM_SURVIVOR ) ) then
+	if ( IsValid( attacker ) && attacker:IsPlayer() && ( attacker:Health() > 0 ) && ( attacker:Team() == TEAM_SURVIVOR ) ) then
 	
 		net.Start( "OV_SendDamageValue" )
 			net.WriteInt( dmg, 16 )
@@ -367,7 +338,7 @@ function GM:PlayerHurt( ply, attacker, health, dmg )
 	end
 
 	-- Infected health is shown briefly
-	if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) ) then
+	if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) ) then
 	
 		ply:SetNWInt( "InfectedLastHurt", CurTime() + 4 )
 	
@@ -480,8 +451,9 @@ function GM:BeginPreRound()
 	end
 
 	-- Random special weapons
+	if ( table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) && ( math.random( 1, 4 ) >= 4 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) table.insert( OV_Game_WeaponLoadout, "weapon_ov_laserriflehybrid" ) end
 	if ( math.random( 1, 6 ) > 1 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-	if ( table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) || ( math.random( 1, 8 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+	if ( !table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) || ( math.random( 1, 8 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
 
 	-- Here we will clean up the map
 	game.CleanUpMap()
@@ -495,6 +467,8 @@ function GM:BeginPreRound()
 	OV_Game_PlayerRank_First = 0
 	OV_Game_PlayerRank_Second = 0
 	OV_Game_PlayerRank_Third = 0
+
+	SetGlobalBool( "OV_Game_PreventEnraged", false )
 
 	net.Start( "OV_UpdateRoundStatus" )
 		net.WriteBool( OV_Game_WaitingForPlayers )
@@ -592,6 +566,13 @@ function GM:BeginMainRound()
 	-- Start some music
 	OV_SetMusic( 3 )
 
+	-- Clean up the last chosen infected table
+	if ( #OV_Game_LastRandomChosenInfected >= player.GetCount() ) then
+	
+		OV_Game_LastRandomChosenInfected = {}
+	
+	end
+	
 	-- Update settings
 	net.Start( "OV_SettingsEnabled" )
 		net.WriteBool( ov_sv_enable_player_radar:GetBool() )
@@ -726,7 +707,7 @@ function GM:PlayerRankCheckup()
 		if ( k == 1 ) then
 		
 			-- First place
-			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_First ) ) then
+			if ( IsValid( Player( v ) ) && ( v != OV_Game_PlayerRank_First ) ) then
 			
 				OV_Game_PlayerRank_First = v
 				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." has reached 1st place!" )
@@ -742,7 +723,7 @@ function GM:PlayerRankCheckup()
 		elseif ( k == 2 ) then
 		
 			-- Second place
-			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_Second ) ) then
+			if ( IsValid( Player( v ) ) && ( v != OV_Game_PlayerRank_Second ) ) then
 			
 				OV_Game_PlayerRank_Second = v
 				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." is now in 2nd place." )
@@ -758,7 +739,7 @@ function GM:PlayerRankCheckup()
 		elseif ( k == 3 ) then
 		
 			-- Third place
-			if ( Player( v ):IsValid() && ( v != OV_Game_PlayerRank_Third ) ) then
+			if ( IsValid( Player( v ) ) && ( v != OV_Game_PlayerRank_Third ) ) then
 			
 				OV_Game_PlayerRank_Third = v
 				PrintMessage( HUD_PRINTTALK, Player( v ):Name().." is now in 3rd place." )

@@ -34,6 +34,8 @@ SWEP.CSMuzzleFlashes = true
 SWEP.Reloading = false
 SWEP.ReloadTime = 0
 
+local WeaponSound = Sound( "Weapon_XM1014.Single" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -49,7 +51,7 @@ function SWEP:PrimaryAttack()
     if ( !self:CanPrimaryAttack() ) then return end
     if ( self.Reloading ) then return end
 
-    self.Weapon:EmitSound( "Weapon_XM1014.Single" )
+    self.Weapon:EmitSound( WeaponSound )
 
     self:ShootBullet( 8, 8, 0.15 )
 

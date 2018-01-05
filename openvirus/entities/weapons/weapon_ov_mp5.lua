@@ -31,6 +31,8 @@ SWEP.DrawWeaponInfoBox = false
 
 SWEP.CSMuzzleFlashes = true
 
+local WeaponSound = Sound( "Weapon_MP5Navy.Single" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -45,7 +47,7 @@ function SWEP:PrimaryAttack()
 
     if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "Weapon_MP5Navy.Single" )
+    self.Weapon:EmitSound( WeaponSound )
 
     self:ShootBullet( 16, 1, 0.05 )
 

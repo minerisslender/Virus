@@ -29,6 +29,10 @@ SWEP.DrawCrosshair = true
 SWEP.BounceWeaponIcon = false
 SWEP.DrawWeaponInfoBox = false
 
+local DeploySound = Sound( "openvirus/effects/ov_deploy_scifi.wav" )
+local WeaponSound = Sound( "openvirus/effects/ov_laser.wav" )
+local ReloadSound = Sound( "weapons/cguard/charging.wav" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -43,9 +47,9 @@ function SWEP:PrimaryAttack()
 
 	if ( !self:CanPrimaryAttack() ) then return end
 
-	self.Weapon:EmitSound( "openvirus/effects/ov_laser.wav" )
+	self.Weapon:EmitSound( WeaponSound )
 
-	self:ShootBullet( 19, 1, 0.005 )
+	self:ShootBullet( 20, 1, 0.005 )
 
 	self:TakePrimaryAmmo( 1 )
 
@@ -70,7 +74,7 @@ function SWEP:Reload()
 	-- Play a sound
 	if ( ( self.Owner:GetAmmoCount( self.Weapon:GetPrimaryAmmoType() ) > 0 ) && ( self.Weapon:Clip1() < self.Primary.DefaultClip ) ) then
 	
-		self.Weapon:EmitSound( "weapons/cguard/charging.wav", 75, 100, 0.7 )
+		self.Weapon:EmitSound( ReloadSound, 75, 100, 0.7 )
 	
 	end
 
@@ -104,6 +108,8 @@ end
 -- First ricochet
 function SWEP:ShootFirstRicochet( attacker, trace, info )
 
+	if ( IsValid( trace.Entity ) && trace.Entity:IsPlayer() ) then return end
+
 	local bullet = {}
 	bullet.Num 		= 1
 	bullet.Src 		= trace.HitPos
@@ -124,6 +130,8 @@ end
 -- Last ricochet
 function SWEP:ShootLastRicochet( attacker, trace, info )
 
+	if ( IsValid( trace.Entity ) && trace.Entity:IsPlayer() ) then return end
+
 	local bullet = {}
 	bullet.Num 		= 1
 	bullet.Src 		= trace.HitPos
@@ -143,7 +151,7 @@ end
 -- Whip it out (hue)
 function SWEP:Deploy()
 
-	self.Weapon:EmitSound( "openvirus/effects/ov_deploy_scifi.wav" )
+	self.Weapon:EmitSound( DeploySound )
 	return true
 
 end

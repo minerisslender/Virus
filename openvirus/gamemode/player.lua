@@ -155,9 +155,6 @@ function GM:PlayerInitialSpawn( ply )
 		net.WriteBool( ov_sv_enable_player_ranking:GetBool() )
 	net.Send( ply )
 
-	-- Call the client for validation
-	ply:SendLua( "GAMEMODE:InitializeValidation()" )
-
 end
 
 
@@ -179,11 +176,7 @@ function GM:PlayerSpawn( ply )
 	ply:UnSpectate()
 
 	-- Set up the player hands
-	if ( ov_sv_survivor_setup_hands:GetBool() ) then
-	
-		ply:SetupHands()
-	
-	end
+	ply:SetupHands()
 
 	-- player_manager stuff
 	player_manager.OnPlayerSpawn( ply )
@@ -195,6 +188,7 @@ function GM:PlayerSpawn( ply )
 	ply:CollisionRulesChanged()
 
 	-- Reset player stats
+	ply:AddEFlags( EFL_IN_SKYBOX )
 	ply:SetFOV( 0, 0 )
 	ply:SetColor( Color( 255, 255, 255 ) )
 	ply:SetBloodColor( BLOOD_COLOR_RED )
@@ -208,11 +202,11 @@ function GM:PlayerSpawn( ply )
 	if ( ply:Team() == TEAM_INFECTED ) then ply.timeInfectionStatus = CurTime() + 2 end
 
 	-- Player Speed
-	if ( ply:Team() == TEAM_SPECTATOR || ply:Team() == TEAM_SURVIVOR ) then
+	if ( ply:Team() == TEAM_SURVIVOR ) then
 	
 		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.OV_Survivor_Speed, GAMEMODE.OV_Survivor_Speed )
 	
-	elseif ( ply:Team() == TEAM_INFECTED ) then
+	elseif ( ( ply:Team() == TEAM_SPECTATOR ) || ( ply:Team() == TEAM_INFECTED ) ) then
 	
 		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.OV_Infected_Speed, GAMEMODE.OV_Infected_Speed )
 	
@@ -259,14 +253,14 @@ function GM:PlayerSetModel( ply )
 	end
 
 	-- Infected player
-	if ( ov_sv_infected_specific_model:GetBool() && ( ply:Team() == TEAM_INFECTED ) ) then
+	if ( ply:Team() == TEAM_INFECTED ) then
 	
 		ply:SetModel( GAMEMODE.OV_Infected_Model )
 	
 	end
 
 	-- Set the player model to something different
-	if ( ov_sv_infected_specific_model:GetBool() && ( ( ply:Team() == TEAM_SURVIVOR ) && ( ply:GetModel() == GAMEMODE.OV_Infected_Model ) ) ) then
+	if ( ( ply:Team() == TEAM_SURVIVOR ) && ( ply:GetModel() == GAMEMODE.OV_Infected_Model ) ) then
 	
 		ply:SetModel( "models/player/kleiner.mdl" )
 	
@@ -335,28 +329,6 @@ end
 function GM:PlayerDeathSound()
 
 	return true
-
-end
-
-
--- Set up player visibility areas
-function GM:SetupPlayerVisibility( ply, viewent )
-
-	-- Every other player will be added to visibility
-	-- Note that this only works when there are 16 players or below due to limitations
-	if ( player.GetCount() <= 16 ) then
-	
-		for _, ply2 in pairs( player.GetAll() ) do
-		
-			if ( ply2:IsValid() && ply2:Alive() && ( ply2:Team() == TEAM_INFECTED || ply2:Team() == TEAM_SURVIVOR ) && !ply2:TestPVS( ply ) ) then
-			
-				AddOriginToPVS( ply2:EyePos() )
-			
-			end
-		
-		end
-	
-	end
 
 end
 

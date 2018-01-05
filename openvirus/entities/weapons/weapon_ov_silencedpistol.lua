@@ -8,8 +8,8 @@ SWEP.ViewModelFlip = false
 SWEP.ViewModel = "models/weapons/cstrike/c_pist_usp.mdl"
 SWEP.WorldModel = "models/weapons/w_pist_usp_silencer.mdl"
 
-SWEP.Primary.ClipSize = 12
-SWEP.Primary.DefaultClip = 12
+SWEP.Primary.ClipSize = 24
+SWEP.Primary.DefaultClip = 24
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "OV_SilencedPistol"
 
@@ -31,6 +31,8 @@ SWEP.DrawWeaponInfoBox = false
 
 SWEP.CSMuzzleFlashes = true
 
+local WeaponSound = Sound( "Weapon_USP.SilencedShot" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -45,9 +47,9 @@ function SWEP:PrimaryAttack()
 
     if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "Weapon_USP.SilencedShot" )
+    self.Weapon:EmitSound( WeaponSound )
 
-    self:ShootBullet( 18, 1, 0.005 )
+    self:ShootBullet( 16, 1, 0.005 )
 
     self:TakePrimaryAmmo( 1 )
 

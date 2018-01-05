@@ -83,24 +83,27 @@ function GM:Initialize()
 	ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
 	ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
 	ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
+	if ( system.IsWindows() ) then ov_cl_round_music_loop = CreateClientConVar( "ov_cl_round_music_loop", "1", true, false ) end -- This is only available for Windows due to SoundDuration issues on other systems
 	ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
 
 	-- ConCommands
 	concommand.Add( "ov_net_update", function() return end )
 
-	-- Display the help menu if we a missing this thing
+	-- Create this directory if it does not exist
 	if ( !file.Exists( "openvirus", "DATA" ) ) then
 	
 		file.CreateDir( "openvirus" )
 	
 	end
 
+	-- Create this directory if it does not exist
 	if ( !file.Exists( "openvirus/client", "DATA" ) ) then
 	
 		file.CreateDir( "openvirus/client" )
 	
 	end
 
+	-- Automatic help menu for first time
 	if ( !file.Exists( "openvirus/client/seen_help_menu.txt", "DATA" ) ) then
 	
 		file.Write( "openvirus/client/seen_help_menu.txt", "Delete me if you want the help menu to appear automatically again." )
@@ -138,6 +141,7 @@ function GM:InitializeLang()
 	language.Add( "weapon_ov_flak", "Flak .357" )
 	language.Add( "weapon_ov_laserpistol", "Laser Gun" )
 	language.Add( "weapon_ov_laserrifle", "Laser Rifle" )
+	language.Add( "weapon_ov_laserriflehybrid", "Laser Rifle (Hybrid)" )
 	language.Add( "weapon_ov_m3", "M3 Shotgun" )
 	language.Add( "weapon_ov_mp5", "MP5 Navy" )
 	language.Add( "weapon_ov_p90", "P90" )
@@ -163,6 +167,7 @@ function GM:InitializeKillicons()
 	killicon.AddFont( "weapon_ov_flak", "HL2MPTypeDeath", ".", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_laserpistol", "HL2MPTypeDeath", "-", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_laserrifle", "HL2MPTypeDeath", "2", Color( 255, 80, 0, 255 ) )
+	killicon.AddFont( "weapon_ov_laserriflehybrid", "HL2MPTypeDeath", "2", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_m3", "CSTRIKETypeDeath", "k", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_mp5", "CSTRIKETypeDeath", "x", Color( 255, 80, 0, 255 ) )
 	killicon.AddFont( "weapon_ov_p90", "CSTRIKETypeDeath", "m", Color( 255, 80, 0, 255 ) )
@@ -183,9 +188,13 @@ function GM:InitializeSounds()
 	local OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/wfp/*.wav", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_WaitingForPlayers, CreateSound( game.GetWorld(), "openvirus/music/wfp/"..v ) )
-		OV_Sounds_WaitingForPlayers[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_WaitingForPlayers[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/wfp/"..v )
+	
+		OV_Sounds_WaitingForPlayers[ k ] = {}
+	
+		OV_Sounds_WaitingForPlayers[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/wfp/"..v )
+		OV_Sounds_WaitingForPlayers[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_WaitingForPlayers[ k ][ "sound" ]:Stop()
 	
 	end
 
@@ -193,9 +202,13 @@ function GM:InitializeSounds()
 	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/pround/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_PreRound, CreateSound( game.GetWorld(), "openvirus/music/pround/"..v ) )
-		OV_Sounds_PreRound[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_PreRound[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/pround/"..v )
+	
+		OV_Sounds_PreRound[ k ] = {}
+	
+		OV_Sounds_PreRound[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/pround/"..v )
+		OV_Sounds_PreRound[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_PreRound[ k ][ "sound" ]:Stop()
 	
 	end
 
@@ -203,9 +216,15 @@ function GM:InitializeSounds()
 	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/inround/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_InRound, CreateSound( game.GetWorld(), "openvirus/music/inround/"..v ) )
-		OV_Sounds_InRound[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_InRound[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/inround/"..v )
+	
+		OV_Sounds_InRound[ k ] = {}
+	
+		OV_Sounds_InRound[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/inround/"..v )
+		OV_Sounds_InRound[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_InRound[ k ][ "sound" ]:Stop()
+	
+		OV_Sounds_InRound[ k ][ "duration" ] = SoundDuration( "openvirus/music/inround/"..v ) / 2
 	
 	end
 
@@ -213,9 +232,15 @@ function GM:InitializeSounds()
 	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/laststanding/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_LastSurvivor, CreateSound( game.GetWorld(), "openvirus/music/laststanding/"..v ) )
-		OV_Sounds_LastSurvivor[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_LastSurvivor[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/laststanding/"..v )
+	
+		OV_Sounds_LastSurvivor[ k ] = {}
+	
+		OV_Sounds_LastSurvivor[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/laststanding/"..v )
+		OV_Sounds_LastSurvivor[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_LastSurvivor[ k ][ "sound" ]:Stop()
+	
+		OV_Sounds_LastSurvivor[ k ][ "duration" ] = SoundDuration( "openvirus/music/laststanding/"..v ) / 2
 	
 	end
 
@@ -223,9 +248,13 @@ function GM:InitializeSounds()
 	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/infected_win/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_InfectedWin, CreateSound( game.GetWorld(), "openvirus/music/infected_win/"..v ) )
-		OV_Sounds_InfectedWin[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_InfectedWin[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/infected_win/"..v )
+	
+		OV_Sounds_InfectedWin[ k ] = {}
+	
+		OV_Sounds_InfectedWin[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/infected_win/"..v )
+		OV_Sounds_InfectedWin[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_InfectedWin[ k ][ "sound" ]:Stop()
 	
 	end
 
@@ -233,9 +262,13 @@ function GM:InitializeSounds()
 	OV_Sounds_FileList, OV_Sounds_FolderList = file.Find( "sound/openvirus/music/survivors_win/*.mp3", "GAME" )
 	for k, v in pairs( OV_Sounds_FileList ) do
 	
-		table.insert( OV_Sounds_SurvivorsWin, CreateSound( game.GetWorld(), "openvirus/music/survivors_win/"..v ) )
-		OV_Sounds_SurvivorsWin[ k ]:SetSoundLevel( 0 )
-		OV_Sounds_SurvivorsWin[ k ]:Stop()
+		util.PrecacheSound( "openvirus/music/survivors_win/"..v )
+	
+		OV_Sounds_SurvivorsWin[ k ] = {}
+	
+		OV_Sounds_SurvivorsWin[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/survivors_win/"..v )
+		OV_Sounds_SurvivorsWin[ k ][ "sound" ]:SetSoundLevel( 0 )
+		OV_Sounds_SurvivorsWin[ k ][ "sound" ]:Stop()
 	
 	end
 
@@ -249,26 +282,15 @@ function GM:InitializeSounds()
 end
 
 
--- Initialize the validation of CStrike
-function GM:InitializeValidation()
-
-	-- Validate CStrike
-	net.Start( "OV_CStrikeValidation" )
-		net.WriteBool( IsMounted( "cstrike" ) )
-	net.SendToServer()
-
-end
-
-
 -- Called every frame
 function GM:Think()
 
 	-- Check for players around us to infect
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && LocalPlayer():GetInfectionStatus() ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && LocalPlayer():GetInfectionStatus() ) then
 	
 		for _, ent in pairs( ents.FindInSphere( LocalPlayer():EyePos() - Vector( 0, 0, 16 ), 8 ) ) do
 		
-			if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_SURVIVOR ) ) then
+			if ( IsValid( ent ) && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_SURVIVOR ) ) then
 			
 				net.Start( "OV_ClientsideInfect" )
 					net.WriteEntity( ent )
@@ -301,11 +323,11 @@ function GM:Think()
 	-- Geiger Counter
 	if ( ov_cl_survivor_geigercounter:GetBool() && OV_Game_InRound ) then
 	
-		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
+		if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 		
 			for _, ent in pairs( ents.FindInSphere( LocalPlayer():GetPos(), 1024 ) ) do
 			
-				if ( ent:IsValid() && ( ent:IsPlayer() && ent:Alive() && ( ent:Team() != LocalPlayer():Team() ) ) && ( !ent.OV_GeigerCounterCooldown || ( ent.OV_GeigerCounterCooldown < CurTime() ) ) ) then
+				if ( IsValid( ent ) && ( ent:IsPlayer() && ent:Alive() && ( ent:Team() != LocalPlayer():Team() ) ) && ( !ent.OV_GeigerCounterCooldown || ( ent.OV_GeigerCounterCooldown < CurTime() ) ) ) then
 				
 					ent.OV_GeigerCounterCooldown = CurTime() + math.Remap( ent:GetPos():Distance( LocalPlayer():GetPos() ), 0, 1024, 0, 32 ) / 100
 				
@@ -387,12 +409,13 @@ end
 
 
 -- Called each tick
+local OV_CountdownTimer_Text_Number = 0
 function GM:Tick()
 
 	-- Lerp calculation for Countdown Text and avoid frame stuff
 	for k, v in pairs( OV_CountdownText ) do
 	
-		v.x = ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 0.5, v.timeSet, 0, ScrW() ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 0.5, 0, 0, ScrW() ), 0, ScrW() )
+		v.x = ( ScrW() / 2 ) + math.Clamp( math.Remap( v.time - CurTime(), v.timeSet - 0.25, v.timeSet, 0, ScrW() ), 0, ScrW() ) - math.Clamp( math.Remap( v.time - CurTime(), 0.25, 0, 0, ScrW() ), 0, ScrW() )
 		if ( v.lerp ) then
 		
 			v.x = ( v.x * 0.1 ) + ( v.lerp.x * 0.9 )
@@ -420,6 +443,42 @@ function GM:Tick()
 	
 	end
 
+	-- Manage the timer countdown here
+	if ( OV_Game_InRound && timer.Exists( "OV_RoundTimer" ) ) then
+	
+		local OV_CountdownTimer_RoundedTime = math.Round( timer.TimeLeft( "OV_RoundTimer" ) )
+		local OV_CountdownTimer_Text = {}
+	
+		if ( ( OV_CountdownTimer_RoundedTime == 15 ) && ( OV_CountdownTimer_RoundedTime != OV_CountdownTimer_Text_Number ) ) then
+		
+			OV_CountdownTimer_Text = {}
+			OV_CountdownTimer_Text.text = "15 SECONDS LEFT"
+			OV_CountdownTimer_Text.color = Color( 255, 0, 0 )
+			OV_CountdownTimer_Text.time = CurTime() + 4
+			OV_CountdownTimer_Text.timeSet = 4
+		
+			table.insert( OV_CountdownText, OV_CountdownTimer_Text )
+			surface.PlaySound( "buttons/bell1.wav" )
+		
+			OV_CountdownTimer_Text_Number = OV_CountdownTimer_RoundedTime
+		
+		elseif ( ( ( OV_CountdownTimer_RoundedTime > 0 ) && ( OV_CountdownTimer_RoundedTime <= 5 ) ) && ( OV_CountdownTimer_RoundedTime != OV_CountdownTimer_Text_Number ) ) then
+		
+			OV_CountdownTimer_Text = {}
+			OV_CountdownTimer_Text.text = OV_CountdownTimer_RoundedTime
+			OV_CountdownTimer_Text.color = Color( 255, 255, 255 )
+			OV_CountdownTimer_Text.time = CurTime() + 1.25
+			OV_CountdownTimer_Text.timeSet = 1.25
+		
+			table.insert( OV_CountdownText, OV_CountdownTimer_Text )
+			surface.PlaySound( "buttons/bell1.wav" )
+		
+			OV_CountdownTimer_Text_Number = OV_CountdownTimer_RoundedTime
+		
+		end
+	
+	end
+
 end
 
 
@@ -427,7 +486,7 @@ end
 function OV_PlayerPostThink( ply )
 
 	-- Dynamic light
-	if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
+	if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ply:GetInfectionStatus() ) then
 	
 		infectedlight = DynamicLight( ply:EntIndex() )
 		if ( infectedlight ) then
@@ -446,7 +505,7 @@ function OV_PlayerPostThink( ply )
 	end
 
 	-- Show score on the HUD
-	if ( ply:IsValid() && ( OV_ShowScoreFrags != ply:Frags() ) ) then
+	if ( IsValid( ply ) && ( OV_ShowScoreFrags != ply:Frags() ) ) then
 	
 		OV_ShowScoreFrags = ply:Frags()
 		OV_ShowScoreTime = CurTime() + 4
@@ -474,63 +533,11 @@ net.Receive( "OV_UpdateRoundStatus", OV_UpdateRoundStatus )
 -- Get the game timer count
 function OV_SendTimerCount( len )
 
+	-- Remove the timer if it exists already
 	if ( timer.Exists( "OV_RoundTimer" ) ) then timer.Remove( "OV_RoundTimer" ) end
-	if ( timer.Exists( "OV_CountdownTimer_15" ) ) then timer.Remove( "OV_CountdownTimer_15" ) end
-	if ( timer.Exists( "OV_CountdownTimer" ) ) then timer.Remove( "OV_CountdownTimer" ) end
 
-	-- Create a fake timer as an indicator
-	timer.Create( "OV_RoundTimer", net.ReadFloat(), 1, function() end )
-
-	-- If this is the main round we are gonna do count downs
-	if ( OV_Game_InRound && timer.Exists( "OV_RoundTimer" ) ) then
-	
-		local OV_CountdownTimer_Text = {}
-		local OV_CountdownTimer_Text_Number = 5
-	
-		timer.Create( "OV_CountdownTimer_15", timer.TimeLeft( "OV_RoundTimer" ) - 15.5, 1, function()
-		
-			if ( timer.Exists( "OV_RoundTimer" ) ) then
-			
-				OV_CountdownTimer_Text = {}
-				OV_CountdownTimer_Text.text = "15 SECONDS LEFT"
-				OV_CountdownTimer_Text.color = Color( 255, 0, 0 )
-				OV_CountdownTimer_Text.time = CurTime() + 4
-				OV_CountdownTimer_Text.timeSet = 4
-			
-				table.insert( OV_CountdownText, OV_CountdownTimer_Text )
-				surface.PlaySound( "buttons/bell1.wav" )
-			
-			end
-		
-		end )
-	
-		OV_CountdownTimer_Text = {}
-	
-		timer.Create( "OV_CountdownTimer", timer.TimeLeft( "OV_RoundTimer" ) - 6.75, 1, function()
-		
-			timer.Remove( "OV_CountdownTimer" )
-			timer.Create( "OV_CountdownTimer", 1, 5, function()
-			
-				if ( timer.Exists( "OV_RoundTimer" ) ) then
-				
-					OV_CountdownTimer_Text = {}
-					OV_CountdownTimer_Text.text = tostring( OV_CountdownTimer_Text_Number )
-					OV_CountdownTimer_Text.color = Color( 255, 255, 255 )
-					OV_CountdownTimer_Text.time = CurTime() + 2
-					OV_CountdownTimer_Text.timeSet = 2
-				
-					table.insert( OV_CountdownText, OV_CountdownTimer_Text )
-					surface.PlaySound( "buttons/bell1.wav" )
-				
-					OV_CountdownTimer_Text_Number = OV_CountdownTimer_Text_Number - 1
-				
-				end
-			
-			end )
-		
-		end )
-	
-	end
+	-- Create a fake timer to show the client how long we probably have left
+	timer.Create( "OV_RoundTimer", net.ReadFloat(), 1, function() if ( timer.Exists( "OV_RoundTimer" ) ) then timer.Remove( "OV_RoundTimer" ) end end )
 
 end
 net.Receive( "OV_SendTimerCount", OV_SendTimerCount )
@@ -569,6 +576,7 @@ net.Receive( "OV_SendDamageValue", OV_SendDamageValue )
 function OV_SetMusic( len )
 
 	local setmusic_state = net.ReadInt( 4 )
+	local selectedmusic = 0
 
 	-- 0 is stop all music
 	-- 1 is waiting for players music
@@ -580,67 +588,103 @@ function OV_SetMusic( len )
 
 	if ( !ov_cl_round_music:GetBool() ) then return end
 
+	if ( timer.Exists( "OV_MusicLoop" ) ) then timer.Remove( "OV_MusicLoop" ) end
+
 	if ( setmusic_state <= 0 ) then
 	
 		for k, v in pairs( OV_Sounds_WaitingForPlayers ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_PreRound ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_InRound ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_LastSurvivor ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_InfectedWin ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_SurvivorsWin ) do
 		
-			v:Stop()
+			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
 		
 		end
 	
 	elseif ( setmusic_state == 1 ) then
 	
-		if ( #OV_Sounds_WaitingForPlayers > 0 ) then OV_Sounds_WaitingForPlayers[ math.random( 1, #OV_Sounds_WaitingForPlayers ) ]:Play() end
+		if ( #OV_Sounds_WaitingForPlayers > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_WaitingForPlayers )
+			selectedmusic[ "sound" ]:Play()
+		
+		end
 	
 	elseif ( setmusic_state == 2 ) then
 	
-		if ( #OV_Sounds_PreRound > 0 ) then OV_Sounds_PreRound[ math.random( 1, #OV_Sounds_PreRound ) ]:Play() end
+		if ( #OV_Sounds_PreRound > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_PreRound )
+			selectedmusic[ "sound" ]:Play()
+				
+		end
 	
 	elseif ( setmusic_state == 3 ) then
 	
-		if ( #OV_Sounds_InRound > 0 ) then OV_Sounds_InRound[ math.random( 1, #OV_Sounds_InRound ) ]:Play() end
+		if ( #OV_Sounds_InRound > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_InRound )
+			selectedmusic[ "sound" ]:Play()
+		
+			if ( ov_cl_round_music_loop && ov_cl_round_music_loop:GetBool() ) then timer.Create( "OV_MusicLoop", selectedmusic[ "duration" ], 0, function() if ( selectedmusic ) then selectedmusic[ "sound" ]:Stop() selectedmusic[ "sound" ]:Play() end end ) end
+		
+		end
 	
 	elseif ( setmusic_state == 4 ) then
 	
-		if ( #OV_Sounds_LastSurvivor > 0 ) then OV_Sounds_LastSurvivor[ math.random( 1, #OV_Sounds_LastSurvivor ) ]:Play() end
+		if ( #OV_Sounds_LastSurvivor > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_LastSurvivor )
+			selectedmusic[ "sound" ]:Play()
+		
+			if ( ov_cl_round_music_loop && ov_cl_round_music_loop:GetBool() ) then timer.Create( "OV_MusicLoop", selectedmusic[ "duration" ], 0, function() if ( selectedmusic ) then selectedmusic[ "sound" ]:Stop() selectedmusic[ "sound" ]:Play() end end ) end
+		
+		end
 	
 	elseif ( setmusic_state == 5 ) then
 	
-		if ( #OV_Sounds_InfectedWin > 0 ) then OV_Sounds_InfectedWin[ math.random( 1, #OV_Sounds_InfectedWin ) ]:Play() end
+		if ( #OV_Sounds_InfectedWin > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_InfectedWin )
+			selectedmusic[ "sound" ]:Play()
+		
+		end
 	
 	elseif ( setmusic_state >= 6 ) then
 	
-		if ( #OV_Sounds_SurvivorsWin > 0 ) then OV_Sounds_SurvivorsWin[ math.random( 1, #OV_Sounds_SurvivorsWin ) ]:Play() end
+		if ( #OV_Sounds_SurvivorsWin > 0 ) then
+		
+			selectedmusic = table.Random( OV_Sounds_SurvivorsWin )
+			selectedmusic[ "sound" ]:Play()
+		
+		end
 	
 	end
 
@@ -671,7 +715,7 @@ function OV_HUDShouldDraw( hud )
 	end
 
 	-- Hide the crosshair for thirdperson
-	if ( LocalPlayer():IsValid() && LocalPlayer():ShouldDrawLocalPlayer() && ( hud == "CHudCrosshair" ) ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():ShouldDrawLocalPlayer() && ( hud == "CHudCrosshair" ) ) then
 	
 		return false
 	
@@ -734,7 +778,7 @@ function GM:HUDPaint()
 	end
 
 	-- Ranking
-	if ( !OV_Game_PreRound && !OV_Game_EndRound && ( OV_Game_PlayerRank_Position != 0 ) ) then
+	if ( !OV_Game_PreRound && !OV_Game_EndRound && ( OV_Game_PlayerRank_Position != 0 ) && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 	
 		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
 		surface.DrawRect( 15, ScrH() - 15 - ( 36 * OV_HUD_Scale ), 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
@@ -776,7 +820,7 @@ function GM:HUDPaint()
 		-- Begin putting dots on the radar
 		for _, ply in pairs( player.GetAll() ) do
 		
-			if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply != LocalPlayer() ) ) then
+			if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply != LocalPlayer() ) ) then
 			
 				-- World to Radar
 				local x_diff = ply:GetPos().x - LocalPlayer():GetPos().x
@@ -840,7 +884,7 @@ function GM:HUDPaint()
 	end
 
 	-- Weapon Selection
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( OV_WeaponSelectionNameTime > CurTime() ) ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( OV_WeaponSelectionNameTime > CurTime() ) ) then
 	
 		draw.SimpleTextOutlined( "#"..OV_WeaponSelectionName, "TargetID", ScrW() / 2, ScrH() / 2 - 60, Color( 255, 255, 255, math.Remap( OV_WeaponSelectionNameTime - CurTime(), 0, 0.5, 0, 255 ) ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color( 0, 0, 0, math.Remap( OV_WeaponSelectionNameTime - CurTime(), 0, 0.5, 0, 255 ) ) )
 	
@@ -884,7 +928,7 @@ function GM:HUDPaint()
 	end
 
 	-- Ammo Counter
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && LocalPlayer():GetActiveWeapon() && LocalPlayer():GetActiveWeapon():IsValid() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && IsValid( LocalPlayer():GetActiveWeapon() ) && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
 	
 		local ammocounter_primaryclip = LocalPlayer():GetActiveWeapon():Clip1().." /"
 		if ( LocalPlayer():GetActiveWeapon():Clip1() < 0 ) then ammocounter_primaryclip = "" end
@@ -907,7 +951,7 @@ end
 function GM:HUDPaintBackground()
 
 	-- Draw a 3D crosshair in Survivor thirdperson
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():ShouldDrawLocalPlayer() && ( LocalPlayer():GetActiveWeapon() && LocalPlayer():GetActiveWeapon():IsValid() ) ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():ShouldDrawLocalPlayer() && ( IsValid( LocalPlayer():GetActiveWeapon() ) ) ) then
 	
 		surface.SetDrawColor( 255, 220, 0, 255 )
 		surface.DrawRect( LocalPlayer():GetEyeTrace().HitPos:ToScreen().x, LocalPlayer():GetEyeTrace().HitPos:ToScreen().y + 8, 1, 1 )
@@ -931,89 +975,82 @@ hook.Add( "OnPlayerChat", "OV_OnPlayerChat", OV_OnPlayerChat )
 
 
 -- Called after when rendering opaque renderables
-function OV_PostDrawTranslucentRenderables( depth, skybox )
+function GM:PostPlayerDraw( ply )
 
 	-- Begin 3D TargetID
-	for _, ply in pairs( player.GetAll() ) do
+	if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply:GetPos():Distance( LocalPlayer():GetPos() ) < 512 ) && ( ply != LocalPlayer() ) ) then
 	
-		-- Render the 3D Text
-		if ( ply:IsValid() && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR || ply:Team() == TEAM_INFECTED ) && ( ply:GetPos():Distance( LocalPlayer():GetPos() ) < 512 ) && ( ply != LocalPlayer() ) ) then
+		cam.Start3D2D( ply:GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 90, 90 ), 0.5 )
 		
-			cam.Start3D2D( ply:GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 90, 90 ), 0.5 )
+			draw.SimpleText( ply:Name(), "DermaLarge", 40, -120, Color( 255, 255, 255, math.Remap( ply:GetPos():Distance( LocalPlayer():GetPos() ), 412, 512, 255, 0 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
+		
+			local hud_teamname = "WAITING"
+			if ( OV_Game_InRound ) then
 			
-				draw.SimpleText( ply:Name(), "DermaLarge", 40, -120, Color( 255, 255, 255, math.Remap( ply:GetPos():Distance( LocalPlayer():GetPos() ), 412, 512, 255, 0 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-			
-				local hud_teamname = "WAITING"
-				if ( OV_Game_InRound ) then
+				if ( ply:Team() == TEAM_SURVIVOR ) then
 				
-					if ( ply:Team() == TEAM_SURVIVOR ) then
-					
-						hud_teamname = ""
-					
-					elseif ( ply:Team() == TEAM_INFECTED ) then
-					
-						hud_teamname = "INFECTED"
-					
-					end
+					hud_teamname = ""
+				
+				elseif ( ply:Team() == TEAM_INFECTED ) then
+				
+					hud_teamname = "INFECTED"
 				
 				end
 			
-				draw.SimpleText( hud_teamname, "Trebuchet24", 40, -90, Color( 127.5, 127.5, 127.5, math.Remap( ply:GetPos():Distance( LocalPlayer():GetPos() ), 412, 512, 255, 0 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
-			
-			cam.End3D2D()
+			end
 		
-		end
-	
-	end
-
-	-- Infected flame
-	for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
-	
-		if ( ply:IsValid() && ply:Alive() && ply:GetInfectionStatus() ) then
-		
-			-- Render the flame
-			cam.Start3D2D( ply:GetPos(), Angle( 0, EyeAngles().y - 90, 90 ), 0.5 )
-			
-				local flame_red, flame_green, flame_blue = 180, 255, 0
-				if ( ply:GetEnragedStatus() ) then
-				
-					flame_red, flame_green, flame_blue = 255, 255, 255
-				
-				end
-			
-				surface.SetDrawColor( flame_red, flame_green, flame_blue, 255 )
-				surface.SetMaterial( OV_Material_InfectedFlame )
-				surface.DrawTexturedRect( -50, -292, 100, 300 )
-			
-			cam.End3D2D()
-		
-		end
-	
-	end
-
-	-- Infected player health
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && ( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) > CurTime() ) ) then
-	
-		cam.Start3D2D( LocalPlayer():GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 270, 90 ), 0.5 )
-		
-			surface.SetDrawColor( 0, 0, 0, math.Clamp( math.Remap( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) - CurTime(), 0, 1, 0, 127.5 ), 0, 127.5 ) )
-			surface.DrawRect( 40, -120, 16, 64 )
-			surface.SetDrawColor( 255, 127.5, 0, math.Clamp( math.Remap( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) - CurTime(), 0, 1, 0, 127.5 ), 0, 127.5 ) )
-			surface.DrawRect( 41, -119 + math.Remap( LocalPlayer():Health(), 0, LocalPlayer():GetMaxHealth(), 62, 0 ), 14, math.Remap( LocalPlayer():Health(), 0, LocalPlayer():GetMaxHealth(), 0, 62 ) )
+			draw.SimpleText( hud_teamname, "Trebuchet24", 40, -90, Color( 127.5, 127.5, 127.5, math.Remap( ply:GetPos():Distance( LocalPlayer():GetPos() ), 412, 512, 255, 0 ) ), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP )
 		
 		cam.End3D2D()
 	
 	end
 
+	-- Infected flame
+	if ( IsValid( ply ) && ply:Alive() && ply:GetInfectionStatus() ) then
+	
+		cam.Start3D2D( ply:GetPos(), Angle( 0, EyeAngles().y - 90, 90 ), 0.5 )
+		
+			local flame_red, flame_green, flame_blue = 180, 255, 0
+			if ( ply:GetEnragedStatus() ) then
+			
+				flame_red, flame_green, flame_blue = 255, 255, 255
+			
+			end
+		
+			surface.SetDrawColor( flame_red, flame_green, flame_blue, 255 )
+			surface.SetMaterial( OV_Material_InfectedFlame )
+			surface.DrawTexturedRect( -50, -292, 100, 300 )
+		
+		cam.End3D2D()
+	
+	end
+
+	-- Infected player health
+	if ( IsValid( LocalPlayer() ) && IsValid( ply ) && ( LocalPlayer() == ply ) ) then
+	
+		if ( LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_INFECTED ) && ( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) > CurTime() ) ) then
+		
+			cam.Start3D2D( LocalPlayer():GetPos(), Angle( 0, LocalPlayer():EyeAngles().y - 270, 90 ), 0.5 )
+			
+				surface.SetDrawColor( 0, 0, 0, math.Clamp( math.Remap( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) - CurTime(), 0, 1, 0, 127.5 ), 0, 127.5 ) )
+				surface.DrawRect( 40, -120, 16, 64 )
+				surface.SetDrawColor( 255, 127.5, 0, math.Clamp( math.Remap( LocalPlayer():GetNWInt( "InfectedLastHurt", 0 ) - CurTime(), 0, 1, 0, 127.5 ), 0, 127.5 ) )
+				surface.DrawRect( 41, -119 + math.Remap( LocalPlayer():Health(), 0, LocalPlayer():GetMaxHealth(), 62, 0 ), 14, math.Remap( LocalPlayer():Health(), 0, LocalPlayer():GetMaxHealth(), 0, 62 ) )
+			
+			cam.End3D2D()
+		
+		end
+	
+	end
+
 end
-hook.Add( "PostDrawTranslucentRenderables", "OV_PostDrawTranslucentRenderables", OV_PostDrawTranslucentRenderables )
 
 
 -- Called when the player view is calculated
 function OV_CalcView( ply, pos, ang, fov, zn, zf )
 
 	-- Infected thirdperson
-	if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( ( LocalPlayer():Team() == TEAM_INFECTED ) || OV_Game_WaitingForPlayers ) ) then
+	if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( ( LocalPlayer():Team() == TEAM_INFECTED ) || OV_Game_WaitingForPlayers ) ) then
 	
 		local tracepos = {}
 		tracepos.start = pos
@@ -1037,7 +1074,7 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	end
 
 	-- Survivor thirdperson
-	if ( ov_cl_survivor_thirdperson:GetBool() && LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+	if ( ov_cl_survivor_thirdperson:GetBool() && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
 	
 		local tracepos = {}
 		tracepos.start = pos
@@ -1071,7 +1108,7 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	end
 
 	-- Survivor firstperson
-	if ( ov_cl_camera_bob:GetBool() && LocalPlayer():IsValid() && LocalPlayer():Alive() && LocalPlayer():IsOnGround() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+	if ( ov_cl_camera_bob:GetBool() && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && LocalPlayer():IsOnGround() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
 	
 		local view = {}
 		view.origin = pos
@@ -1121,14 +1158,14 @@ function OV_RenderScreenspaceEffects()
 	if ( ov_cl_screenspace_effects:GetBool() ) then
 	
 		-- Last Survivor
-		if ( OV_Game_InRound && LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( team.NumPlayers( TEAM_SURVIVOR ) < 2 ) ) then
+		if ( OV_Game_InRound && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( team.NumPlayers( TEAM_SURVIVOR ) < 2 ) ) then
 		
 			DrawBloom( 0.75, 2, 9, 9, 1, 1, 1, 1, 1 )
 		
 		end
 
 		-- Adrenaline effect
-		if ( LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():GetAdrenalineStatus() ) then
+		if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():GetAdrenalineStatus() ) then
 		
 			DrawMotionBlur( 0.25, 0.75, 0.01 )
 			DrawSharpen( 1.1, 1.1 )
@@ -1161,7 +1198,7 @@ hook.Add( "RenderScreenspaceEffects", "OV_RenderScreenspaceEffects", OV_RenderSc
 function OV_EntityEmitSound( data )
 
 	-- Adrenaline effect
-	if ( ( data.Entity != game.GetWorld() ) && ov_cl_sound_dsp_effects:GetBool() && LocalPlayer():IsValid() && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():GetAdrenalineStatus() ) then
+	if ( ( data.Entity != game.GetWorld() ) && ov_cl_sound_dsp_effects:GetBool() && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && LocalPlayer():GetAdrenalineStatus() ) then
 	
 		data.DSP = 58
 		return true

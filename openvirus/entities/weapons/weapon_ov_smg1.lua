@@ -29,6 +29,8 @@ SWEP.DrawCrosshair = true
 SWEP.BounceWeaponIcon = false
 SWEP.DrawWeaponInfoBox = false
 
+local WeaponSound = Sound( "Weapon_SMG1.Single" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -43,13 +45,13 @@ function SWEP:PrimaryAttack()
 
     if ( !self:CanPrimaryAttack() ) then return end
 
-    self.Weapon:EmitSound( "Weapon_SMG1.Single" )
+    self.Weapon:EmitSound( WeaponSound )
 
     self:ShootBullet( 12, 1, math.random( 2, 5 ) / 100 )
 
     self:TakePrimaryAmmo( 1 )
 
-    self.Owner:ViewPunch( Angle( -0.75, 0, 0 ) )
+    self.Owner:ViewPunch( Angle( -0.5, 0, 0 ) )
 
     self:SetNextPrimaryFire( CurTime() + 0.075 )
 

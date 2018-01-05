@@ -30,6 +30,8 @@ SWEP.DrawCrosshair = true
 
 SWEP.CSMuzzleFlashes = true
 
+local WeaponSound = Sound( "Weapon_Elite.Single" )
+
 
 -- Initialize the weapon
 function SWEP:Initialize()
@@ -44,7 +46,7 @@ function SWEP:PrimaryAttack()
 
 	if ( !self:CanPrimaryAttack() ) then return end
 
-	self.Weapon:EmitSound( "Weapon_Elite.Single" )
+	self.Weapon:EmitSound( WeaponSound )
 
 	self:ShootBullet( 15, 1, 0.045 )
 

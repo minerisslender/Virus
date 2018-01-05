@@ -12,10 +12,10 @@ function meta:InfectPlayer( ply )
 	if ( CLIENT ) then return end
 	if ( self:Team() != TEAM_SURVIVOR ) then return end
 
+	if ( self:GetAdrenalineStatus() ) then self:SetAdrenalineStatus( 0 ) end
+	self:SetTeam( TEAM_INFECTED )
 	self:SetFOV( 0, 0 )
 	self:SetHealth( GAMEMODE.OV_Infected_Health )
-	self:SetTeam( TEAM_INFECTED )
-	self:SetDeaths( 0 )
 	self:SetBloodColor( DONT_BLEED )
 	if ( SERVER && self:FlashlightIsOn() ) then self:Flashlight( false ) end
 
@@ -25,7 +25,7 @@ function meta:InfectPlayer( ply )
 	hook.Call( "PlayerSetModel", GAMEMODE, self )
 
 	local InfoText_PLYNAME = ""
-	if ( ply && ply:IsValid() && ply:IsPlayer() ) then InfoText_PLYNAME = string.upper( ply:Name() ).." " end
+	if ( IsValid( ply ) && ply:IsPlayer() ) then InfoText_PLYNAME = string.upper( ply:Name() ).." " end
 
 	net.Start( "OV_SendInfoText" )
 		net.WriteString( InfoText_PLYNAME.."INFECTED "..string.upper( self:Name() ) )
@@ -34,7 +34,7 @@ function meta:InfectPlayer( ply )
 	net.Broadcast()
 
 	-- Print in console
-	if ( ply && ply:IsValid() && ply:IsPlayer() ) then
+	if ( IsValid( ply ) && ply:IsPlayer() ) then
 	
 		PrintMessage( HUD_PRINTCONSOLE, self:Name().." was infected by "..ply:Name().."\n" )
 	
@@ -45,10 +45,10 @@ function meta:InfectPlayer( ply )
 	end
 
 	-- Give the player who infected this player a point
-	if ( ply && ply:IsValid() && ply:IsPlayer() ) then ply:AddFrags( 1 ) hook.Call( "PlayerRankCheckup", GAMEMODE ) end
+	if ( IsValid( ply ) && ply:IsPlayer() ) then ply:AddFrags( 1 ) hook.Call( "PlayerRankCheckup", GAMEMODE ) end
 
 	-- Set a time survived
-	if ( ply && ply:IsValid() && ply:IsPlayer() && timer.Exists( "OV_RoundTimer" ) ) then
+	if ( IsValid( ply ) && ply:IsPlayer() && timer.Exists( "OV_RoundTimer" ) ) then
 	
 		self:SetNWFloat( "OV_TimeSurvived", OV_Game_MainRoundTimerCount - timer.TimeLeft( "OV_RoundTimer" ) )
 	
@@ -77,7 +77,7 @@ function meta:SetInfectionStatus( bool )
 		self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 110 )
 	
 		-- Start enraged mode here
-		if ( ( team.NumPlayers( TEAM_INFECTED ) < 2 ) && ( self:Team() == TEAM_INFECTED ) && ( ( self:Deaths() > 2 ) || timer.Exists( "OV_RoundTimer" ) && ( timer.TimeLeft( "OV_RoundTimer" ) <= ( OV_Game_MainRoundTimerCount * 0.75 ) ) ) ) then
+		if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( self ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 2 ) ) then
 		
 			self:SetEnragedStatus( 1 )
 		
