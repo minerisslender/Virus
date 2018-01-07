@@ -80,10 +80,9 @@ function GM:Initialize()
 	ov_cl_survivor_thirdperson_right = CreateClientConVar( "ov_cl_survivor_thirdperson_right", "1", false, false )
 	ov_cl_screenspace_effects = CreateClientConVar( "ov_cl_screenspace_effects", "1", true, false )
 	ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
-	ov_cl_survivor_geigercounter = CreateClientConVar( "ov_cl_survivor_geigercounter", "1", true, false )
+	ov_cl_geigercounter = CreateClientConVar( "ov_cl_geigercounter", "1", true, false )
 	ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
 	ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
-	if ( system.IsWindows() ) then ov_cl_round_music_loop = CreateClientConVar( "ov_cl_round_music_loop", "0", true, false ) end -- This is only available for Windows due to SoundDuration issues on other systems
 	ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
 
 	-- ConCommands
@@ -190,11 +189,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/wfp/"..v )
 	
-		OV_Sounds_WaitingForPlayers[ k ] = {}
-	
-		OV_Sounds_WaitingForPlayers[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/wfp/"..v )
-		OV_Sounds_WaitingForPlayers[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_WaitingForPlayers[ k ][ "sound" ]:Stop()
+		OV_Sounds_WaitingForPlayers[ k ] = CreateSound( game.GetWorld(), "openvirus/music/wfp/"..v )
+		OV_Sounds_WaitingForPlayers[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_WaitingForPlayers[ k ]:Stop()
 	
 	end
 
@@ -204,11 +201,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/pround/"..v )
 	
-		OV_Sounds_PreRound[ k ] = {}
-	
-		OV_Sounds_PreRound[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/pround/"..v )
-		OV_Sounds_PreRound[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_PreRound[ k ][ "sound" ]:Stop()
+		OV_Sounds_PreRound[ k ] = CreateSound( game.GetWorld(), "openvirus/music/pround/"..v )
+		OV_Sounds_PreRound[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_PreRound[ k ]:Stop()
 	
 	end
 
@@ -218,13 +213,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/inround/"..v )
 	
-		OV_Sounds_InRound[ k ] = {}
-	
-		OV_Sounds_InRound[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/inround/"..v )
-		OV_Sounds_InRound[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_InRound[ k ][ "sound" ]:Stop()
-	
-		OV_Sounds_InRound[ k ][ "duration" ] = SoundDuration( "openvirus/music/inround/"..v )
+		OV_Sounds_InRound[ k ] = CreateSound( game.GetWorld(), "openvirus/music/inround/"..v )
+		OV_Sounds_InRound[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_InRound[ k ]:Stop()
 	
 	end
 
@@ -234,13 +225,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/laststanding/"..v )
 	
-		OV_Sounds_LastSurvivor[ k ] = {}
-	
-		OV_Sounds_LastSurvivor[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/laststanding/"..v )
-		OV_Sounds_LastSurvivor[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_LastSurvivor[ k ][ "sound" ]:Stop()
-	
-		OV_Sounds_LastSurvivor[ k ][ "duration" ] = SoundDuration( "openvirus/music/laststanding/"..v )
+		OV_Sounds_LastSurvivor[ k ] = CreateSound( game.GetWorld(), "openvirus/music/laststanding/"..v )
+		OV_Sounds_LastSurvivor[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_LastSurvivor[ k ]:Stop()
 	
 	end
 
@@ -250,11 +237,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/infected_win/"..v )
 	
-		OV_Sounds_InfectedWin[ k ] = {}
-	
-		OV_Sounds_InfectedWin[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/infected_win/"..v )
-		OV_Sounds_InfectedWin[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_InfectedWin[ k ][ "sound" ]:Stop()
+		OV_Sounds_InfectedWin[ k ] = CreateSound( game.GetWorld(), "openvirus/music/infected_win/"..v )
+		OV_Sounds_InfectedWin[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_InfectedWin[ k ]:Stop()
 	
 	end
 
@@ -264,11 +249,9 @@ function GM:InitializeSounds()
 	
 		util.PrecacheSound( "openvirus/music/survivors_win/"..v )
 	
-		OV_Sounds_SurvivorsWin[ k ] = {}
-	
-		OV_Sounds_SurvivorsWin[ k ][ "sound" ] = CreateSound( game.GetWorld(), "openvirus/music/survivors_win/"..v )
-		OV_Sounds_SurvivorsWin[ k ][ "sound" ]:SetSoundLevel( 0 )
-		OV_Sounds_SurvivorsWin[ k ][ "sound" ]:Stop()
+		OV_Sounds_SurvivorsWin[ k ] = CreateSound( game.GetWorld(), "openvirus/music/survivors_win/"..v )
+		OV_Sounds_SurvivorsWin[ k ]:SetSoundLevel( 0 )
+		OV_Sounds_SurvivorsWin[ k ]:Stop()
 	
 	end
 
@@ -321,7 +304,7 @@ function GM:Think()
 	end
 
 	-- Geiger Counter
-	if ( ov_cl_survivor_geigercounter:GetBool() && OV_Game_InRound ) then
+	if ( ov_cl_geigercounter:GetBool() && OV_Game_InRound ) then
 	
 		if ( IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() != TEAM_SPECTATOR ) ) then
 		
@@ -467,8 +450,8 @@ function GM:Tick()
 			OV_CountdownTimer_Text = {}
 			OV_CountdownTimer_Text.text = OV_CountdownTimer_RoundedTime
 			OV_CountdownTimer_Text.color = Color( 255, 255, 255 )
-			OV_CountdownTimer_Text.time = CurTime() + 1.25
-			OV_CountdownTimer_Text.timeSet = 1.25
+			OV_CountdownTimer_Text.time = CurTime() + 1.5
+			OV_CountdownTimer_Text.timeSet = 1.5
 		
 			table.insert( OV_CountdownText, OV_CountdownTimer_Text )
 			surface.PlaySound( "buttons/bell1.wav" )
@@ -576,7 +559,6 @@ net.Receive( "OV_SendDamageValue", OV_SendDamageValue )
 function OV_SetMusic( len )
 
 	local setmusic_state = net.ReadInt( 4 )
-	local selectedmusic = 0
 
 	-- 0 is stop all music
 	-- 1 is waiting for players music
@@ -588,43 +570,41 @@ function OV_SetMusic( len )
 
 	if ( !ov_cl_round_music:GetBool() ) then return end
 
-	if ( timer.Exists( "OV_MusicLoop" ) ) then timer.Remove( "OV_MusicLoop" ) end
-
 	if ( setmusic_state <= 0 ) then
 	
 		for k, v in pairs( OV_Sounds_WaitingForPlayers ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_PreRound ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_InRound ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_LastSurvivor ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_InfectedWin ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
 		for k, v in pairs( OV_Sounds_SurvivorsWin ) do
 		
-			if ( v[ "sound" ] ) then v[ "sound" ]:Stop() end
+			v:Stop()
 		
 		end
 	
@@ -632,8 +612,7 @@ function OV_SetMusic( len )
 	
 		if ( #OV_Sounds_WaitingForPlayers > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_WaitingForPlayers )
-			selectedmusic[ "sound" ]:Play()
+			table.Random( OV_Sounds_WaitingForPlayers ):Play()
 		
 		end
 	
@@ -641,19 +620,15 @@ function OV_SetMusic( len )
 	
 		if ( #OV_Sounds_PreRound > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_PreRound )
-			selectedmusic[ "sound" ]:Play()
-				
+			table.Random( OV_Sounds_PreRound ):Play()
+		
 		end
 	
 	elseif ( setmusic_state == 3 ) then
 	
 		if ( #OV_Sounds_InRound > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_InRound )
-			selectedmusic[ "sound" ]:Play()
-		
-			if ( ov_cl_round_music_loop && ov_cl_round_music_loop:GetBool() ) then timer.Create( "OV_MusicLoop", selectedmusic[ "duration" ], 0, function() if ( selectedmusic ) then selectedmusic[ "sound" ]:Stop() selectedmusic[ "sound" ]:Play() end end ) end
+			table.Random( OV_Sounds_InRound ):Play()
 		
 		end
 	
@@ -661,10 +636,7 @@ function OV_SetMusic( len )
 	
 		if ( #OV_Sounds_LastSurvivor > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_LastSurvivor )
-			selectedmusic[ "sound" ]:Play()
-		
-			if ( ov_cl_round_music_loop && ov_cl_round_music_loop:GetBool() ) then timer.Create( "OV_MusicLoop", selectedmusic[ "duration" ], 0, function() if ( selectedmusic ) then selectedmusic[ "sound" ]:Stop() selectedmusic[ "sound" ]:Play() end end ) end
+			table.Random( OV_Sounds_LastSurvivor ):Play()
 		
 		end
 	
@@ -672,8 +644,7 @@ function OV_SetMusic( len )
 	
 		if ( #OV_Sounds_InfectedWin > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_InfectedWin )
-			selectedmusic[ "sound" ]:Play()
+			table.Random( OV_Sounds_InfectedWin ):Play()
 		
 		end
 	
@@ -681,8 +652,7 @@ function OV_SetMusic( len )
 	
 		if ( #OV_Sounds_SurvivorsWin > 0 ) then
 		
-			selectedmusic = table.Random( OV_Sounds_SurvivorsWin )
-			selectedmusic[ "sound" ]:Play()
+			table.Random( OV_Sounds_SurvivorsWin ):Play()
 		
 		end
 	

@@ -114,6 +114,9 @@ function GM:PlayerInitialSpawn( ply )
 	-- player_manager initialize
 	player_manager.SetPlayerClass( ply, "player_virus" )
 
+	-- Use this networked boolean to determine we are a listen server host
+	if ( !game.IsDedicated() ) then ply:SetNWBool( "OV_ServerHost", ply:IsListenServerHost() ) end
+
 	-- Time survived stuff
 	ply:SetNWFloat( "OV_TimeSurvived", 0 )
 

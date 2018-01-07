@@ -182,7 +182,7 @@ function OV_SetMusic( int, ply )
 end
 
 
--- Called every frame
+-- Called every tick
 function GM:Think()
 
 	-- Infected cannot infect players instantly when they spawn
@@ -286,15 +286,15 @@ function GM:Think()
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_SURVIVOR ) ) do
 		
-			if ( ( team.NumPlayers( TEAM_INFECTED ) < 1 ) && IsValid( ply ) && !table.HasValue( OV_Game_LastRandomChosenInfected, ply:SteamID() ) ) then
+			if ( ( team.NumPlayers( TEAM_INFECTED ) < 1 ) && IsValid( ply ) && ( !table.HasValue( OV_Game_LastRandomChosenInfected, ply:SteamID() ) || ply:IsBot() ) ) then
 			
-				if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) * 2 ) == ( team.NumPlayers( TEAM_SURVIVOR ) * 2 ) ) then
+				if ( math.random( 1, team.NumPlayers( TEAM_SURVIVOR ) ) == ( team.NumPlayers( TEAM_SURVIVOR ) ) ) then
+				
+					BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_stinger.wav\" )" )
 				
 					ply:InfectPlayer()
 				
-					if ( team.NumPlayers( TEAM_INFECTED ) <= 1 ) then BroadcastLua( "surface.PlaySound( \"openvirus/effects/ov_stinger.wav\" )" ) end
-				
-					if ( !ply:IsBot() ) then table.insert( OV_Game_LastRandomChosenInfected, ply:SteamID() ) end
+					table.insert( OV_Game_LastRandomChosenInfected, ply:SteamID() )
 				
 				end
 			
@@ -453,7 +453,7 @@ function GM:BeginPreRound()
 	-- Random special weapons
 	if ( table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) && ( math.random( 1, 4 ) >= 4 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_laserrifle" ) table.insert( OV_Game_WeaponLoadout, "weapon_ov_laserriflehybrid" ) end
 	if ( math.random( 1, 6 ) > 1 ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) end
-	if ( !table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) || ( math.random( 1, 8 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
+	if ( table.HasValue( OV_Game_WeaponLoadout, "weapon_ov_flak" ) || ( math.random( 1, 8 ) > 1 ) ) then table.RemoveByValue( OV_Game_WeaponLoadout, "weapon_ov_sniper" ) end
 
 	-- Here we will clean up the map
 	game.CleanUpMap()

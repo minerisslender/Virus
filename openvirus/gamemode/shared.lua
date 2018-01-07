@@ -17,10 +17,10 @@ if ( SERVER ) then AddCSLuaFile() end
 -- Functions down here
 -- Name, Author, Email and Website
 GM.Name     =   "open Virus"
-GM.Author   =   "daunknownman2010"
+GM.Author   =   "daunknownfox2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev29 (Public Alpha)"
+GM.Version  =   "rev30 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -68,7 +68,11 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 	-- Scale stuff
 	if ( hitgroup == HITGROUP_HEAD ) then
 	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
+		
+			info:ScaleDamage( 0.5 )
+		
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
 		
 			info:ScaleDamage( 1 )
 		
@@ -78,39 +82,51 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 		end
 	
-	elseif ( hitgroup == HITGROUP_LEFTLEG ) then
+	elseif ( hitgroup == HITGROUP_CHEST ) then
 	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
 		
 			info:ScaleDamage( 0.25 )
 		
-		else
-		
-			info:ScaleDamage( 0.5 )
-		
-		end
-	
-	elseif ( hitgroup == HITGROUP_RIGHTLEG ) then
-	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
-		
-			info:ScaleDamage( 0.25 )
-		
-		else
-		
-			info:ScaleDamage( 0.5 )
-		
-		end
-	
-	else
-	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 6 ) then
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
 		
 			info:ScaleDamage( 0.5 )
 		
 		else
 		
 			info:ScaleDamage( 1 )
+		
+		end
+	
+	elseif ( hitgroup == HITGROUP_STOMACH ) then
+	
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
+		
+			info:ScaleDamage( 0.25 )
+		
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
+		
+			info:ScaleDamage( 0.5 )
+		
+		else
+		
+			info:ScaleDamage( 1 )
+		
+		end
+	
+	else
+	
+		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
+		
+			info:ScaleDamage( 0.125 )
+		
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
+		
+			info:ScaleDamage( 0.25 )
+		
+		else
+		
+			info:ScaleDamage( 0.5 )
 		
 		end
 	

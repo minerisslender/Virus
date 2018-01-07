@@ -99,7 +99,7 @@ local PLAYER_LINE = {
 
 		if ( self.NumPing == nil || self.NumPing != self.Player:Ping() ) then
 			self.NumPing = self.Player:Ping()
-			if ( !game.IsDedicated() && ( self.Player:EntIndex() == 1 ) ) then self.NumPing = "HOST" end
+			if ( self.Player:GetNWBool( "OV_ServerHost" ) ) then self.NumPing = "HOST" end
 			if ( self.Player:IsBot() ) then self.NumPing = "BOT" end
 			self.Ping:SetText( self.NumPing )
 		end
