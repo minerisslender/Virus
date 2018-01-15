@@ -1,7 +1,5 @@
 -- Fix up cs_compound for Virus gameplay
 
-if ( CLIENT ) then return end
-
 
 function OVMap_PostCleanupMap()
 

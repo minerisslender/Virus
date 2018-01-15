@@ -4,14 +4,12 @@ include( "player_class/player_virus.lua" )
 include( "player_meta.lua" )
 include( "ammo.lua" )
 
--- Custom map-specific hooking stuff
-if ( file.Exists( "openvirus/gamemode/ov_maplua/"..game.GetMap()..".lua", "LUA" ) ) then
-
-	include( "ov_maplua/"..game.GetMap()..".lua" )
-
-end
-
 if ( SERVER ) then AddCSLuaFile() end
+
+
+-- ConVars
+local ov_shared_block_keys = CreateConVar( "ov_shared_block_keys", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
+local ov_shared_player_animations = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
 
 
 -- Functions down here
@@ -20,7 +18,7 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownfox2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev30 (Public Alpha)"
+GM.Version  =   "rev31 (Public Alpha)"
 
 
 -- Some global stuff here
@@ -31,6 +29,38 @@ GM.OV_Infected_EnrageHealth = 400
 GM.OV_Infected_Speed = 380
 GM.OV_Infected_EnrageSpeed = 460
 GM.OV_Infected_Model = "models/player/corpse1.mdl"
+
+
+-- Translate player activities
+if ( ov_shared_player_animations:GetBool() ) then
+
+	-- Hook
+	function OV_TranslateActivity( ply, act )
+	
+		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) && !IsValid( ply:GetActiveWeapon() ) && ( act == ACT_MP_RUN ) ) then
+		
+			return ACT_HL2MP_RUN_FAST
+		
+		end
+	
+		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ( act == ACT_MP_RUN ) ) then
+		
+			if ( ply:GetEnragedStatus() ) then
+			
+				return ACT_HL2MP_RUN_ZOMBIE_FAST
+			
+			else
+			
+				return ACT_HL2MP_RUN_ZOMBIE
+			
+			end
+		
+		end
+	
+	end
+	hook.Add( "TranslateActivity", "OV_TranslateActivity", OV_TranslateActivity )
+
+end
 
 
 -- Should the player take damage
@@ -68,65 +98,65 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 	-- Scale stuff
 	if ( hitgroup == HITGROUP_HEAD ) then
 	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
-		
-			info:ScaleDamage( 0.5 )
-		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
+		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
 			info:ScaleDamage( 1 )
 		
-		else
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
 		
 			info:ScaleDamage( 2 )
+		
+		else
+		
+			info:ScaleDamage( 2.5 )
 		
 		end
 	
 	elseif ( hitgroup == HITGROUP_CHEST ) then
 	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
-		
-			info:ScaleDamage( 0.25 )
-		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
+		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
 			info:ScaleDamage( 0.5 )
 		
-		else
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
 		
 			info:ScaleDamage( 1 )
+		
+		else
+		
+			info:ScaleDamage( 1.5 )
 		
 		end
 	
 	elseif ( hitgroup == HITGROUP_STOMACH ) then
 	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
+		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
+		
+			info:ScaleDamage( 0.5 )
+		
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
+		
+			info:ScaleDamage( 1 )
+		
+		else
+		
+			info:ScaleDamage( 1.5 )
+		
+		end
+	
+	else
+	
+		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
 			info:ScaleDamage( 0.25 )
 		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
+		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
 		
 			info:ScaleDamage( 0.5 )
 		
 		else
 		
 			info:ScaleDamage( 1 )
-		
-		end
-	
-	else
-	
-		if ( team.NumPlayers( TEAM_SURVIVOR ) > 16 ) then
-		
-			info:ScaleDamage( 0.125 )
-		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 8 ) then
-		
-			info:ScaleDamage( 0.25 )
-		
-		else
-		
-			info:ScaleDamage( 0.5 )
 		
 		end
 	
@@ -188,11 +218,15 @@ function GM:StartCommand( ply, ucmd )
 	local blocked_keys = { IN_JUMP, IN_DUCK, IN_SPEED, IN_WALK, IN_ZOOM }
 
 	-- Block the keys
-	for k, v in pairs( blocked_keys ) do
+	if ( ov_shared_block_keys:GetBool() ) then
 	
-		if ( ucmd:KeyDown( v ) ) then
+		for k, v in pairs( blocked_keys ) do
 		
-			ucmd:RemoveKey( v )
+			if ( ucmd:KeyDown( v ) ) then
+			
+				ucmd:RemoveKey( v )
+			
+			end
 		
 		end
 	

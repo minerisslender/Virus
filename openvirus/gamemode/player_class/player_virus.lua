@@ -13,9 +13,9 @@ end
 
 local PLAYER = {}
 
-PLAYER.WalkSpeed = 0	-- Leave this undefined since we set this later
-PLAYER.RunSpeed = 0		-- Leave this undefined since we set this later
-PLAYER.CrouchedWalkSpeed = 1
+PLAYER.WalkSpeed = 0
+PLAYER.RunSpeed = 0
+PLAYER.CrouchedWalkSpeed = 0.3
 PLAYER.TeammateNoCollide = false
 
 
@@ -40,7 +40,7 @@ end
 
 function PLAYER:GetHandsModel()
 
-	if ( ov_sv_survivor_css_hands:GetBool() ) then
+	if ( GetConVar( "ov_sv_survivor_css_hands" ):GetBool() ) then
 	
     	return { model = "models/weapons/c_arms_cstrike.mdl", skin = 1, body = "0100000" }
 	

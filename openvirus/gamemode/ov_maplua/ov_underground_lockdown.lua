@@ -1,7 +1,5 @@
 -- Make ov_underground_lockdown default the player flashlights to true
 
-if ( CLIENT ) then return end
-
 
 function OVMap_PlayerSpawn( ply )
 

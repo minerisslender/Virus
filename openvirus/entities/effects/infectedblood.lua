@@ -10,7 +10,7 @@ function EFFECT:Init( data )
 	self.LifeTime = CurTime() + 5
 	self.Particles = 10
 
-	if ( !ov_cl_infected_blood:GetBool() ) then return end
+	if ( !GetConVar( "ov_cl_infected_blood" ):GetBool() ) then return end
 
 	self.ParticleEmitter = ParticleEmitter( self.Data:GetOrigin(), false )
 	for pnum = 1, self.Particles do

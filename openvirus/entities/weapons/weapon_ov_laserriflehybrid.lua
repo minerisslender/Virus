@@ -176,7 +176,7 @@ function SWEP:Think()
 			
 				self.Owner:ViewPunch( Angle( -16, 0, 0 ) )
 			
-				if ( SERVER && IsValid( self.Secondary.Target ) && self.Secondary.Target:IsPlayer() && self.Secondary.Target:Alive() && ( self.Secondary.Target:Team() == TEAM_INFECTED ) && ( self.Secondary.TargetDistance <= 512 ) ) then
+				if ( SERVER && IsValid( self.Secondary.Target ) && self.Secondary.Target:IsPlayer() && self.Secondary.Target:Alive() && ( self.Secondary.Target:Team() == TEAM_INFECTED ) && ( self.Secondary.TargetDistance <= 400 ) ) then
 				
 					local calculated_velocity = self.Secondary.Target:GetPos() - self.Owner:GetPos()
 					self.Secondary.Target:SetVelocity( Vector( calculated_velocity.x, calculated_velocity.y, 16 ) * 16 )

@@ -3,7 +3,23 @@
 include( "shared.lua" )
 include( "player.lua" )
 
+if ( file.Exists( "openvirus/gamemode/ov_maplua/"..game.GetMap()..".lua", "LUA" ) ) then
+
+	include( "ov_maplua/"..game.GetMap()..".lua" )
+
+end
+
 AddCSLuaFile( "cl_scoreboard.lua" )
+
+
+-- ConVars
+local ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
+local ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "256", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
+local ov_sv_infected_blood = CreateConVar( "ov_sv_infected_blood", "1", FCVAR_ARCHIVE, "Enable the infected blood effects." )
+local ov_sv_survivor_css_hands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
+local ov_sv_enable_player_radar = CreateConVar( "ov_sv_enable_player_radar", "1", FCVAR_NOTIFY, "Players can see the radar." )
+local ov_sv_enable_player_ranking = CreateConVar( "ov_sv_enable_player_ranking", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
+local ov_sv_survivor_mystery_weapons = CreateConVar( "ov_sv_survivor_mystery_weapons", "0", FCVAR_NOTIFY, "Survivors get their weapons when the round begins." )
 
 
 -- Functions down here
@@ -52,14 +68,6 @@ function GM:Initialize()
 
 	-- Set alltalk to 1
 	game.ConsoleCommand( "sv_alltalk 1\n" )
-
-	-- ConVars
-	ov_sv_infection_serverside_only = CreateConVar( "ov_sv_infection_serverside_only", "0", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems." )
-	ov_sv_infection_clientside_valid_distance = CreateConVar( "ov_sv_infection_clientside_valid_distance", "256", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat." )
-	ov_sv_infected_blood = CreateConVar( "ov_sv_infected_blood", "1", FCVAR_ARCHIVE, "Enable the infected blood effects." )
-	ov_sv_survivor_css_hands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
-	ov_sv_enable_player_radar = CreateConVar( "ov_sv_enable_player_radar", "1", FCVAR_NOTIFY, "Players can see the radar." )
-	ov_sv_enable_player_ranking = CreateConVar( "ov_sv_enable_player_ranking", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
 
 	-- ConCommands
 	concommand.Add( "invwep", function( ply, cmd, args, argstring ) if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then ply:SelectWeapon( argstring ) end end )
@@ -503,8 +511,6 @@ function GM:BeginPreRound()
 	
 		ply:Spawn()
 	
-		ply:ScreenFade( SCREENFADE.IN, Color( 0, 0, 0, 255 ), 0.25, 0.75 )
-	
 	end
 
 	-- Indicate that the infection is about to spread
@@ -544,6 +550,21 @@ function GM:BeginMainRound()
 
 	-- Stop music
 	OV_SetMusic( 0 )
+
+	-- Give weapons to players in mystery weapons mode
+	if ( ov_sv_survivor_mystery_weapons:GetBool() ) then
+	
+		for _, ply in pairs( player.GetAll() ) do
+		
+			if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) ) then
+			
+				hook.Call( "PlayerLoadout", GAMEMODE, ply )
+			
+			end
+		
+		end
+	
+	end
 
 	OV_Game_PreRound = false
 	OV_Game_InRound = true
@@ -650,7 +671,7 @@ function GM:EndMainRound()
 		
 		end
 	
-		timer.Simple( 20, function() game.LoadNextMap() end )
+		timer.Simple( 20, function() OV_LoadNextMap() end )
 	
 	end
 
@@ -662,6 +683,23 @@ function GM:EndMainRound()
 
 	-- Allow for events to happen after the round has ended
 	hook.Call( "PostEndMainRound", GAMEMODE )
+
+end
+
+
+-- Function used for loading the next map
+function OV_LoadNextMap()
+
+	-- MapVote integration (thanks for the idea Wolvindra)
+	if ( MapVote ) then
+	
+		MapVote.Start( nil, nil, nil, nil )
+		return
+	
+	end
+
+	-- Load up the next map
+	game.LoadNextMap()
 
 end
 

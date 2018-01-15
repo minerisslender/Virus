@@ -4,6 +4,17 @@ include( "shared.lua" )
 include( "cl_scoreboard.lua" )
 
 
+-- ConVars
+local ov_cl_survivor_thirdperson = CreateClientConVar( "ov_cl_survivor_thirdperson", "0", false, false )
+local ov_cl_survivor_thirdperson_right = CreateClientConVar( "ov_cl_survivor_thirdperson_right", "1", false, false )
+local ov_cl_screenspace_effects = CreateClientConVar( "ov_cl_screenspace_effects", "1", true, false )
+local ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
+local ov_cl_geigercounter = CreateClientConVar( "ov_cl_geigercounter", "1", true, false )
+local ov_cl_camera_roll = CreateClientConVar( "ov_cl_camera_roll", "1", true, false )
+local ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
+local ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
+
+
 -- Functions down here
 -- Called when the game is initialized
 function GM:Initialize()
@@ -74,16 +85,6 @@ function GM:Initialize()
 	OV_Sounds_LastSurvivor = {}
 	OV_Sounds_InfectedWin = {}
 	OV_Sounds_SurvivorsWin = {}
-
-	-- Create some Client ConVars
-	ov_cl_survivor_thirdperson = CreateClientConVar( "ov_cl_survivor_thirdperson", "0", false, false )
-	ov_cl_survivor_thirdperson_right = CreateClientConVar( "ov_cl_survivor_thirdperson_right", "1", false, false )
-	ov_cl_screenspace_effects = CreateClientConVar( "ov_cl_screenspace_effects", "1", true, false )
-	ov_cl_sound_dsp_effects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
-	ov_cl_geigercounter = CreateClientConVar( "ov_cl_geigercounter", "1", true, false )
-	ov_cl_camera_bob = CreateClientConVar( "ov_cl_camera_bob", "1", true, false )
-	ov_cl_round_music = CreateClientConVar( "ov_cl_round_music", "1", true, false )
-	ov_cl_infected_blood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
 
 	-- ConCommands
 	concommand.Add( "ov_net_update", function() return end )
@@ -736,8 +737,7 @@ function GM:HUDPaint()
 	-- Timer
 	if ( !OV_Game_PreRound && !OV_Game_EndRound ) then
 	
-		surface.SetDrawColor( hud_color.r, hud_color.g, hud_color.b, 200 )
-		surface.DrawRect( ScrW() / 2 - ( 30 * OV_HUD_Scale ), 15, 60 * OV_HUD_Scale, 36 * OV_HUD_Scale )
+		draw.RoundedBox( 4, ScrW() / 2 - ( 30 * OV_HUD_Scale ), 15, 60 * OV_HUD_Scale, 36 * OV_HUD_Scale, Color( hud_color.r, hud_color.g, hud_color.b, 200 ) )
 		draw.SimpleTextOutlined( "TIME LEFT", "DermaDefaultBold", ScrW() / 2, 15 * OV_HUD_Scale, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color( 0, 0, 0, 255 ) )
 	
 		local hud_timercount = 0
@@ -1078,11 +1078,11 @@ function OV_CalcView( ply, pos, ang, fov, zn, zf )
 	end
 
 	-- Survivor firstperson
-	if ( ov_cl_camera_bob:GetBool() && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && LocalPlayer():IsOnGround() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
+	if ( ov_cl_camera_roll:GetBool() && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && LocalPlayer():IsOnGround() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) ) then
 	
 		local view = {}
 		view.origin = pos
-		view.angles = Angle( ang.p + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.25 ) ), ang.y, ang.r + ( math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) ) + ( math.cos( CurTime() * 8 ) * math.Remap( LocalPlayer():GetVelocity():Length(), 0, GAMEMODE.OV_Survivor_Speed, 0, 0.9 ) ) )
+		view.angles = Angle( ang.p, ang.y, ang.r + math.Remap( LocalPlayer():EyeAngles():Right():Dot( LocalPlayer():GetVelocity() ), 0, LocalPlayer():GetMaxSpeed(), 0, 6 ) )
 		view.fov = fov
 		view.znear = zn
 		view.zfar = zf

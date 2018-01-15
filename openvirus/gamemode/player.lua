@@ -29,12 +29,14 @@ end
 -- Player disconnected
 function GM:PlayerDisconnected( ply )
 
+	-- End the round when only one player exist
 	if ( OV_Game_InRound && ( player.GetCount() <= 2 ) ) then
 	
 		timer.Simple( 0.1, function() if ( OV_Game_InRound && ( player.GetCount() <= 1 ) ) then GAMEMODE:EndMainRound() end end )
 	
 	end
 
+	-- End the round when no survivors are left
 	if ( OV_Game_InRound && ( team.NumPlayers( TEAM_SURVIVOR ) <= 1 ) ) then
 	
 		timer.Simple( 0.1, function() if ( OV_Game_InRound && ( team.NumPlayers( TEAM_SURVIVOR ) <= 0 ) ) then GAMEMODE:EndMainRound() end end )
@@ -43,6 +45,17 @@ function GM:PlayerDisconnected( ply )
 
 	-- Update player ranking
 	timer.Simple( 0.1, function() hook.Call( "PlayerRankCheckup", GAMEMODE ) end )
+
+	-- Clean up the last chosen infected table
+	timer.Simple( 0.1, function()
+	
+		if ( #OV_Game_LastRandomChosenInfected >= player.GetCount() ) then
+		
+			OV_Game_LastRandomChosenInfected = {}
+		
+		end
+	
+	end )
 
 end
 
@@ -91,7 +104,7 @@ function OV_PlayerDeath( ply, inflictor, attacker )
 		ply:SetColor( Color( 255, 255, 255 ) )
 	
 		-- Infected blood effects
-		if ( ov_sv_infected_blood:GetBool() ) then
+		if ( GetConVar( "ov_sv_infected_blood" ):GetBool() ) then
 		
 			local bloodeffect = EffectData()
 			bloodeffect:SetOrigin( ply:LocalToWorld( ply:OBBCenter() ) )
@@ -154,8 +167,8 @@ function GM:PlayerInitialSpawn( ply )
 	end
 
 	net.Start( "OV_SettingsEnabled" )
-		net.WriteBool( ov_sv_enable_player_radar:GetBool() )
-		net.WriteBool( ov_sv_enable_player_ranking:GetBool() )
+		net.WriteBool( GetConVar( "ov_sv_enable_player_radar" ):GetBool() )
+		net.WriteBool( GetConVar( "ov_sv_enable_player_ranking" ):GetBool() )
 	net.Send( ply )
 
 end
@@ -191,7 +204,6 @@ function GM:PlayerSpawn( ply )
 	ply:CollisionRulesChanged()
 
 	-- Reset player stats
-	ply:AddEFlags( EFL_IN_SKYBOX )
 	ply:SetFOV( 0, 0 )
 	ply:SetColor( Color( 255, 255, 255 ) )
 	ply:SetBloodColor( BLOOD_COLOR_RED )
@@ -216,7 +228,7 @@ function GM:PlayerSpawn( ply )
 	end
 
 	-- Player Loadout
-	hook.Call( "PlayerLoadout", GAMEMODE, ply )
+	if ( !GetConVar( "ov_sv_survivor_mystery_weapons" ):GetBool() || OV_Game_InRound ) then hook.Call( "PlayerLoadout", GAMEMODE, ply ) end
 
 	-- Player Model
 	hook.Call( "PlayerSetModel", GAMEMODE, ply )
