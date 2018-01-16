@@ -1,6 +1,10 @@
 -- Initialize the player!
 
 
+-- ConVars
+local ov_sv_enable_player_taunting = CreateConVar( "ov_sv_enable_player_taunting", "0", FCVAR_NOTIFY, "Players are allowed to use taunt animations." )
+
+
 -- Functions down here
 -- Called when a player picks up a weapon
 function GM:PlayerCanPickupWeapon( ply, ent )
@@ -337,6 +341,9 @@ function GM:PlayerLoadout( ply )
 	
 	end
 
+	-- Dual pistols get extra ammo
+	if ( ply:HasWeapon( "weapon_ov_dualpistol" ) ) then ply:GiveAmmo( 30, game.GetAmmoID( "OV_DualPistol" ), true ) end
+
 end
 
 
@@ -380,7 +387,7 @@ end
 function GM:PlayerShouldTaunt( ply, id )
 
 	-- Disable taunts
-	return false
+	return ov_sv_enable_player_taunting:GetBool() || false
 
 end
 

@@ -9,7 +9,7 @@ if ( SERVER ) then AddCSLuaFile() end
 
 -- ConVars
 local ov_shared_block_keys = CreateConVar( "ov_shared_block_keys", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
-local ov_shared_player_animations = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
+local ov_shared_translate_activities = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
 
 
 -- Functions down here
@@ -18,31 +18,32 @@ GM.Name     =   "open Virus"
 GM.Author   =   "daunknownfox2010"
 GM.Email    =   "N/A"
 GM.Website  =   "N/A"
-GM.Version  =   "rev31 (Public Alpha)"
+GM.Version  =   "rev32 (Public Alpha)"
 
 
 -- Some global stuff here
 GM.OV_Survivor_Speed = 300
-GM.OV_Survivor_AdrenSpeed = 440
+GM.OV_Survivor_AdrenSpeed = 420
 GM.OV_Infected_Health = 100
 GM.OV_Infected_EnrageHealth = 400
-GM.OV_Infected_Speed = 380
+GM.OV_Infected_Speed = 360
 GM.OV_Infected_EnrageSpeed = 460
 GM.OV_Infected_Model = "models/player/corpse1.mdl"
 
 
 -- Translate player activities
-if ( ov_shared_player_animations:GetBool() ) then
+function OV_TranslateActivity( ply, act )
 
-	-- Hook
-	function OV_TranslateActivity( ply, act )
+	if ( ov_shared_translate_activities:GetBool() ) then
 	
+		-- Survivor run
 		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) && !IsValid( ply:GetActiveWeapon() ) && ( act == ACT_MP_RUN ) ) then
 		
 			return ACT_HL2MP_RUN_FAST
 		
 		end
 	
+		-- Infected run
 		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ( act == ACT_MP_RUN ) ) then
 		
 			if ( ply:GetEnragedStatus() ) then
@@ -58,9 +59,9 @@ if ( ov_shared_player_animations:GetBool() ) then
 		end
 	
 	end
-	hook.Add( "TranslateActivity", "OV_TranslateActivity", OV_TranslateActivity )
 
 end
+hook.Add( "TranslateActivity", "OV_TranslateActivity", OV_TranslateActivity )
 
 
 -- Should the player take damage
@@ -81,7 +82,7 @@ function GM:PlayerShouldTakeDamage( ply, attacker )
 	end
 
 	-- One infected player cannot be damaged in non infection mode
-	if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( ply ) && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 2 ) && !ply:GetInfectionStatus() ) then
+	if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( ply ) && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 1 ) && !ply:GetInfectionStatus() ) then
 	
 		return false
 	
@@ -102,7 +103,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 			info:ScaleDamage( 1 )
 		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
+		elseif ( ( player.GetCount() < 8 ) || ( ( player.GetCount() >= 8 ) && ( team.NumPlayers( TEAM_SURVIVOR ) > 2 ) ) ) then
 		
 			info:ScaleDamage( 2 )
 		
@@ -118,7 +119,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 			info:ScaleDamage( 0.5 )
 		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
+		elseif ( ( player.GetCount() < 8 ) || ( ( player.GetCount() >= 8 ) && ( team.NumPlayers( TEAM_SURVIVOR ) > 2 ) ) ) then
 		
 			info:ScaleDamage( 1 )
 		
@@ -134,7 +135,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 			info:ScaleDamage( 0.5 )
 		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
+		elseif ( ( player.GetCount() < 8 ) || ( ( player.GetCount() >= 8 ) && ( team.NumPlayers( TEAM_SURVIVOR ) > 2 ) ) ) then
 		
 			info:ScaleDamage( 1 )
 		
@@ -150,7 +151,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 			info:ScaleDamage( 0.25 )
 		
-		elseif ( team.NumPlayers( TEAM_SURVIVOR ) > 1 ) then
+		elseif ( ( player.GetCount() < 8 ) || ( ( player.GetCount() >= 8 ) && ( team.NumPlayers( TEAM_SURVIVOR ) > 2 ) ) ) then
 		
 			info:ScaleDamage( 0.5 )
 		

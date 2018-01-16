@@ -77,7 +77,7 @@ function meta:SetInfectionStatus( bool )
 		self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 110 )
 	
 		-- Start enraged mode here
-		if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( self ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 2 ) ) then
+		if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( self ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 1 ) ) then
 		
 			self:SetEnragedStatus( 1 )
 		

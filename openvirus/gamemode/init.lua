@@ -224,7 +224,7 @@ function GM:Think()
 	end
 
 	-- Enraged players must be cancelled
-	if ( ( OV_Game_InRound || OV_Game_EndRound ) && ( team.NumPlayers( TEAM_INFECTED ) > 1 ) ) then
+	if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && ( OV_Game_InRound || OV_Game_EndRound ) && ( team.NumPlayers( TEAM_INFECTED ) > 1 ) ) then
 	
 		for _, ply in pairs( team.GetPlayers( TEAM_INFECTED ) ) do
 		

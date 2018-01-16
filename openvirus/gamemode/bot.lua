@@ -93,7 +93,7 @@ function BOT_PlayerDeath( ply )
 
 	if ( ply:IsBot() ) then
 	
-		timer.Simple( 4, function() if ( !OV_Game_EndRound && ply:IsValid() && !ply:Alive() ) then ply:Spawn() end end )
+		timer.Simple( 5, function() if ( !OV_Game_EndRound && ply:IsValid() && !ply:Alive() ) then ply:Spawn() end end )
 	
 	end
 

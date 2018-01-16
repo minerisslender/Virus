@@ -1128,7 +1128,7 @@ function OV_RenderScreenspaceEffects()
 	if ( ov_cl_screenspace_effects:GetBool() ) then
 	
 		-- Last Survivor
-		if ( OV_Game_InRound && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( team.NumPlayers( TEAM_SURVIVOR ) < 2 ) ) then
+		if ( OV_Game_InRound && IsValid( LocalPlayer() ) && LocalPlayer():Alive() && ( LocalPlayer():Team() == TEAM_SURVIVOR ) && ( team.NumPlayers( TEAM_SURVIVOR ) <= 1 ) ) then
 		
 			DrawBloom( 0.75, 2, 9, 9, 1, 1, 1, 1, 1 )
 		
