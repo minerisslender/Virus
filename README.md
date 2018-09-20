@@ -1,5 +1,5 @@
 # open Virus
-### Welcome to open Virus (Alpha)!
+### Welcome to open Virus (Beta)!
 
 This gamemode is an open-source recreation of the popular GMod Tower and Tower Unite gamemode called Virus. The concept is the same, however, there are differences:
 
