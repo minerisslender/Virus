@@ -1,40 +1,50 @@
 -- Initialize the gamemode!
 
-include( "player_class/player_virus.lua" )
-include( "player_meta.lua" )
-include( "ammo.lua" )
+AddCSLuaFile()
 
-if ( SERVER ) then AddCSLuaFile() end
+include( "player_class/player_virus.lua" )
+include( "vgui/init.lua" )
+include( "player_meta.lua" )
+include( "sh_ammo.lua" )
+include( "sh_variables.lua" )
+
+
+-- Map Lua inclusion
+if ( file.Exists( "openvirus/gamemode/map_lua/"..game.GetMap()..".lua", "LUA" ) ) then
+
+	include( "map_lua/"..game.GetMap()..".lua" )
+
+end
 
 
 -- ConVars
-local ov_shared_block_keys = CreateConVar( "ov_shared_block_keys", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
-local ov_shared_translate_activities = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
+local blockKeys = CreateConVar( "ov_shared_block_keys", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
+local translateActivities = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
 
 
 -- Functions down here
 -- Name, Author, Email and Website
-GM.Name     =   "open Virus"
-GM.Author   =   "daunknownfox2010"
-GM.Email    =   "N/A"
-GM.Website  =   "N/A"
-GM.Version  =   "rev32 (Public Alpha)"
+GM.Name = "open Virus"
+GM.Author = "daunknownfox2010"
+GM.Email = "N/A"
+GM.Website = "N/A"
+GM.Version = "rev33 (Public Beta)"
 
 
 -- Some global stuff here
-GM.OV_Survivor_Speed = 300
-GM.OV_Survivor_AdrenSpeed = 420
-GM.OV_Infected_Health = 100
-GM.OV_Infected_EnrageHealth = 400
-GM.OV_Infected_Speed = 360
-GM.OV_Infected_EnrageSpeed = 460
-GM.OV_Infected_Model = "models/player/corpse1.mdl"
+GM.SurvivorSpeed = 300
+GM.SurvivorAdrenSpeed = 420
+GM.InfectedHealth = 100
+GM.InfectedEnrageHealth = 400
+GM.InfectedSpeed = 360
+GM.InfectedEnrageSpeed = 460
+GM.InfectedModel = "models/player/corpse1.mdl"
 
 
 -- Translate player activities
-function OV_TranslateActivity( ply, act )
+function VirusTranslateActivity( ply, act )
 
-	if ( ov_shared_translate_activities:GetBool() ) then
+	if ( translateActivities:GetBool() ) then
 	
 		-- Survivor run
 		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) && !IsValid( ply:GetActiveWeapon() ) && ( act == ACT_MP_RUN ) ) then
@@ -43,32 +53,17 @@ function OV_TranslateActivity( ply, act )
 		
 		end
 	
-		-- Infected run
-		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ( act == ACT_MP_RUN ) ) then
-		
-			if ( ply:GetEnragedStatus() ) then
-			
-				return ACT_HL2MP_RUN_ZOMBIE_FAST
-			
-			else
-			
-				return ACT_HL2MP_RUN_ZOMBIE
-			
-			end
-		
-		end
-	
 	end
 
 end
-hook.Add( "TranslateActivity", "OV_TranslateActivity", OV_TranslateActivity )
+hook.Add( "TranslateActivity", "VirusTranslateActivity", VirusTranslateActivity )
 
 
 -- Should the player take damage
 function GM:PlayerShouldTakeDamage( ply, attacker )
 
 	-- Block damaging players
-	if ( IsValid( ply ) && ( ply:Team() == TEAM_SURVIVOR ) && IsValid( attacker ) && ( attacker:GetClass() != "trigger_hurt" ) ) then
+	if ( IsValid( ply ) && ply:IsSurvivor() && IsValid( attacker ) && ( attacker:GetClass() != "trigger_hurt" ) ) then
 	
 		return false
 	
@@ -82,7 +77,7 @@ function GM:PlayerShouldTakeDamage( ply, attacker )
 	end
 
 	-- One infected player cannot be damaged in non infection mode
-	if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( ply ) && ( ply:Team() == TEAM_INFECTED ) && ( ply:Deaths() > 1 ) && !ply:GetInfectionStatus() ) then
+	if ( !GetPreventEnraged() && IsValid( ply ) && ply:IsInfected() && ( ply:Deaths() > 1 ) && !ply:GetInfectionStatus() ) then
 	
 		return false
 	
@@ -94,10 +89,10 @@ end
 
 
 -- Scale the player damage
-function GM:ScalePlayerDamage( ply, hitgroup, info )
+function GM:ScalePlayerDamage( ply, hitGroup, info )
 
 	-- Scale stuff
-	if ( hitgroup == HITGROUP_HEAD ) then
+	if ( hitGroup == HITGROUP_HEAD ) then
 	
 		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
@@ -113,7 +108,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 		end
 	
-	elseif ( hitgroup == HITGROUP_CHEST ) then
+	elseif ( hitGroup == HITGROUP_CHEST ) then
 	
 		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
@@ -129,7 +124,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, info )
 		
 		end
 	
-	elseif ( hitgroup == HITGROUP_STOMACH ) then
+	elseif ( hitGroup == HITGROUP_STOMACH ) then
 	
 		if ( team.NumPlayers( TEAM_SURVIVOR ) >= 16 ) then
 		
@@ -201,13 +196,6 @@ function GM:ShouldCollide( ent1, ent2 )
 	
 	end
 
-	-- Bot navigation entity
-	if ( ( IsValid( ent1 ) && ent1:IsPlayer() && ent1:Alive() && IsValid( ent2 ) && ( ent2:GetClass() == "ent_bot_navigation" ) ) || ( IsValid( ent2 ) && ent2:IsPlayer() && ent2:Alive() && IsValid( ent1 ) && ( ent1:GetClass() == "ent_bot_navigation" ) ) ) then
-	
-		return false
-	
-	end
-
 	return true
 
 end
@@ -216,12 +204,12 @@ end
 -- This is used to prevent certain move commands from working
 function GM:StartCommand( ply, ucmd )
 
-	local blocked_keys = { IN_JUMP, IN_DUCK, IN_SPEED, IN_WALK, IN_ZOOM }
+	local blockedKeys = { IN_JUMP, IN_DUCK, IN_SPEED, IN_WALK, IN_ZOOM }
 
 	-- Block the keys
-	if ( ov_shared_block_keys:GetBool() ) then
+	if ( blockKeys:GetBool() ) then
 	
-		for k, v in pairs( blocked_keys ) do
+		for k, v in pairs( blockedKeys ) do
 		
 			if ( ucmd:KeyDown( v ) ) then
 			
@@ -232,5 +220,65 @@ function GM:StartCommand( ply, ucmd )
 		end
 	
 	end
+
+end
+
+
+-- Get the player rank
+function GM:GetPlayerRank( ply )
+
+	if ( !IsValid( ply ) ) then return 0; end
+	if ( !ply:IsPlayer() ) then return 0; end
+	if ( ply:IsSpectating() ) then return 0; end
+
+	local sortedPlayers = {}
+
+	for _, ply in ipairs( player.GetAll() ) do
+	
+		if ( !ply:IsSpectating() ) then
+		
+			sortedPlayers[ ply:UserID() ] = ( ( ply:Frags() * 50 ) - ply:EntIndex() )
+		
+		end
+	
+	end
+
+	sortedPlayers = table.SortByKey( sortedPlayers )
+
+	for k, v in ipairs( sortedPlayers ) do
+	
+		if ( Player( v ) == ply ) then
+		
+			return k
+		
+		end
+	
+	end
+
+	return 0;
+
+end
+
+
+-- Get the ranking player
+function GM:GetRankingPlayer( num )
+
+	if ( !num ) then return; end
+
+	local sortedPlayers = {}
+
+	for _, ply in ipairs( player.GetAll() ) do
+	
+		if ( !ply:IsSpectating() ) then
+		
+			sortedPlayers[ ply:UserID() ] = ( ( ply:Frags() * 50 ) - ply:EntIndex() )
+		
+		end
+	
+	end
+
+	sortedPlayers = table.SortByKey( sortedPlayers )
+
+	return Player( sortedPlayers[ num ] || 0 )
 
 end

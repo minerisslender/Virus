@@ -11,7 +11,7 @@ SWEP.WorldModel = "models/weapons/w_pist_elite.mdl"
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "OV_DualPistol"
+SWEP.Primary.Ammo = "DualPistol"
 SWEP.Primary.FireSecondary = false
 
 SWEP.Secondary.ClipSize = -1
@@ -81,11 +81,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "CSTRIKETypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 3 ), y + ( h / 2.5 ) )
-		surface.DrawText( "s" )
+		draw.SimpleText( "s", "CSTRIKETypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

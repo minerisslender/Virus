@@ -26,7 +26,7 @@ function EFFECT:Init( data )
 	self.ParticleEmitter = ParticleEmitter( self.Data:GetOrigin(), false )
 	for pnum = 1, 4 do
 	
-		self.Particle = self.ParticleEmitter:Add( OV_Material_SpawnEffectMaterial, self.Data:GetOrigin() )
+		self.Particle = self.ParticleEmitter:Add( MATERIAL_SPAWN_EFFECT, self.Data:GetOrigin() )
 		if ( self.Particle ) then
 		
 			self.Particle:SetAngles( self.Data:GetAngles() )
@@ -50,13 +50,7 @@ end
 -- Think
 function EFFECT:Think()
 
-	if ( self.LifeTime < CurTime() ) then
-
-		self:Remove()
-	
-	end
-
-	return true
+	return ( self.LifeTime >= CurTime() )
 
 end
 

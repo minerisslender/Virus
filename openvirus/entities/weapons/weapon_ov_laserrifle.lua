@@ -155,7 +155,7 @@ if ( CLIENT ) then
 		if ( self.Primary.Charge > 0 ) then
 		
 			draw.RoundedBox( 2, ScrW() / 2 - ( ScrH() * 0.25 / 2 ), ScrH() / 1.1, ScrH() * 0.25, ScrH() * 0.025, Color( 0, 0, 0, 200 ) )
-			draw.RoundedBox( 1, ScrW() / 2 - ( ScrH() * 0.25 / 2 ) + 2, ScrH() / 1.1 + 2, ( ScrH() * 0.25 - 4 ) * ( self.Primary.Charge / 100 ), ScrH() * 0.025 - 4, Color( 255, math.Remap( self.Primary.Charge, 0, 100, 255, 0 ), math.Remap( self.Primary.Charge, 0, 100, 255, 0 ) ), 200 )
+			draw.RoundedBox( 1, ScrW() / 2 - ( ScrH() * 0.25 / 2 ) + 2, ScrH() / 1.1 + 2, ( ScrH() * 0.25 - 4 ) * ( self.Primary.Charge / 100 ), ScrH() * 0.025 - 4, Color( 255, 255 - ( ( self.Primary.Charge / 100 ) * 255 ), 255 - ( ( self.Primary.Charge / 100 ) * 255 ), 200 ) )
 		
 		end
 	
@@ -165,11 +165,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "HL2MPTypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 3.25 ), y + ( h / 2.5 ) )
-		surface.DrawText( "2" )
+		draw.SimpleText( "2", "HL2MPTypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

@@ -127,11 +127,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "HL2MPTypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 2.75 ), y + ( h / 2.5 ) )
-		surface.DrawText( "*" )
+		draw.SimpleText( "*", "HL2MPTypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

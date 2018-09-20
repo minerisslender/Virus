@@ -2,16 +2,15 @@
 
 
 -- ConVars
-local ov_sv_enable_player_taunting = CreateConVar( "ov_sv_enable_player_taunting", "0", FCVAR_NOTIFY, "Players are allowed to use taunt animations." )
+local enablePlayerTaunting = CreateConVar( "ov_sv_enable_player_taunting", "0", FCVAR_NOTIFY, "Players are allowed to use taunt animations." )
 
 
--- Functions down here
 -- Called when a player picks up a weapon
 function GM:PlayerCanPickupWeapon( ply, ent )
 
 	-- Only survivors can pick up weapons not created by the map
-	if ( ply:Team() != TEAM_SURVIVOR ) then return false end
-	if ( ent:CreatedByMap() ) then return false end
+	if ( !ply:IsSurvivor() ) then return false; end
+	if ( ent:CreatedByMap() ) then return false; end
 
 	return true
 
@@ -22,8 +21,8 @@ end
 function GM:PlayerCanPickupItem( ply, ent )
 
 	-- Only survivors can pick up items not created by the map
-	if ( ply:Team() != TEAM_SURVIVOR ) then return false end
-	if ( ent:CreatedByMap() ) then return false end
+	if ( !ply:IsSurvivor() ) then return false; end
+	if ( ent:CreatedByMap() ) then return false; end
 
 	return true
 
@@ -33,33 +32,27 @@ end
 -- Player disconnected
 function GM:PlayerDisconnected( ply )
 
+	timer.Simple( 0.05, function() hook.Call( "DelayedPlayerDisconnected", GAMEMODE ); end )
+
+end
+
+
+-- Delayed player disconnected
+function GM:DelayedPlayerDisconnected()
+
 	-- End the round when only one player exist
-	if ( OV_Game_InRound && ( player.GetCount() <= 2 ) ) then
+	if ( ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) && ( player.GetCount() <= 1 ) ) then
 	
-		timer.Simple( 0.1, function() if ( OV_Game_InRound && ( player.GetCount() <= 1 ) ) then GAMEMODE:EndMainRound() end end )
+		hook.Call( "EndMainRound", GAMEMODE )
 	
 	end
 
 	-- End the round when no survivors are left
-	if ( OV_Game_InRound && ( team.NumPlayers( TEAM_SURVIVOR ) <= 1 ) ) then
+	if ( ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) && ( team.NumPlayers( TEAM_SURVIVOR ) <= 0 ) ) then
 	
-		timer.Simple( 0.1, function() if ( OV_Game_InRound && ( team.NumPlayers( TEAM_SURVIVOR ) <= 0 ) ) then GAMEMODE:EndMainRound() end end )
+		hook.Call( "EndMainRound", GAMEMODE )
 	
 	end
-
-	-- Update player ranking
-	timer.Simple( 0.1, function() hook.Call( "PlayerRankCheckup", GAMEMODE ) end )
-
-	-- Clean up the last chosen infected table
-	timer.Simple( 0.1, function()
-	
-		if ( #OV_Game_LastRandomChosenInfected >= player.GetCount() ) then
-		
-			OV_Game_LastRandomChosenInfected = {}
-		
-		end
-	
-	end )
 
 end
 
@@ -68,7 +61,7 @@ end
 function GM:PlayerDeathThink( ply )
 
 	-- Respawn players after a certain amount of time
-	if ( ply.NextSpawnTime && ( ( ply.NextSpawnTime + 3 ) < CurTime() ) ) then
+	if ( ply.NextSpawnTime && ( ( ply.NextSpawnTime + 2 ) < CurTime() ) ) then
 	
 		ply:Spawn()
 	
@@ -87,42 +80,39 @@ end
 
 
 -- Called when a player dies
-function OV_PlayerDeath( ply, inflictor, attacker )
+function VirusPlayerDeath( ply, inflictor, attacker )
 
 	-- If a player dies
-	if ( ply:Team() == TEAM_SURVIVOR ) then
+	if ( ply:IsSurvivor() ) then
 	
 		-- Survivor managed to die in the round
-		if ( OV_Game_InRound ) then ply:InfectPlayer() end
+		if ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) then
+		
+			ply:InfectPlayer()
+		
+		end
 	
 		ply:SetFOV( 0, 0 )
-		ply:SetAdrenalineStatus( 0 )
+		ply:SetAdrenalineStatus( false )
 		ply.timeAdrenalineStatus = 0
 		ply:RemoveAllItems()
 	
-	elseif ( ply:Team() == TEAM_INFECTED ) then
+	elseif ( ply:IsInfected() ) then
 	
-		ply:SetEnragedStatus( 0 )
-		ply:SetInfectionStatus( 0 )
+		ply:SetEnragedStatus( false )
+		ply:SetInfectionStatus( false )
 		ply.timeInfectionStatus = 0
 		ply:SetColor( Color( 255, 255, 255 ) )
 	
 		-- Infected blood effects
-		if ( GetConVar( "ov_sv_infected_blood" ):GetBool() ) then
-		
-			local bloodeffect = EffectData()
-			bloodeffect:SetOrigin( ply:LocalToWorld( ply:OBBCenter() ) )
-			util.Effect( "infectedblood", bloodeffect )
-		
-		end
+		local bloodeffect = EffectData()
+		bloodeffect:SetOrigin( ply:LocalToWorld( ply:OBBCenter() ) )
+		util.Effect( "infectedblood", bloodeffect )
 	
 	end
 
-	-- Update player ranking
-	hook.Call( "PlayerRankCheckup", GAMEMODE )
-
 end
-hook.Add( "PlayerDeath", "OV_PlayerDeath", OV_PlayerDeath )
+hook.Add( "PlayerDeath", "VirusPlayerDeath", VirusPlayerDeath )
 
 
 -- Called before the first spawn
@@ -132,48 +122,32 @@ function GM:PlayerInitialSpawn( ply )
 	player_manager.SetPlayerClass( ply, "player_virus" )
 
 	-- Use this networked boolean to determine we are a listen server host
-	if ( !game.IsDedicated() ) then ply:SetNWBool( "OV_ServerHost", ply:IsListenServerHost() ) end
+	if ( !game.IsDedicated() ) then
+	
+		ply:SetNWBool( "ListenServerHost", ply:IsListenServerHost() )
+	
+	end
 
 	-- Time survived stuff
-	ply:SetNWFloat( "OV_TimeSurvived", 0 )
+	ply:SetNWFloat( "SurvivorTimeSurvived", 0 )
 
 	-- Select these teams at initial spawn
-	if ( OV_Game_WaitingForPlayers || OV_Game_PreRound ) then
+	if ( IsRoundState( ROUNDSTATE_WAITING ) || IsRoundState( ROUNDSTATE_PREROUND ) ) then
 	
 		ply:SetTeam( TEAM_SURVIVOR )
 	
-	elseif ( OV_Game_InRound ) then
+	elseif ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) then
 	
 		ply:SetTeam( TEAM_INFECTED )
 	
-	elseif ( OV_Game_EndRound ) then
+	elseif ( IsRoundState( ROUNDSTATE_ENDROUND ) ) then
 	
 		ply:SetTeam( TEAM_SPECTATOR )
 	
 	end
 
-	-- Update networked stuff
-	net.Start( "OV_UpdateRoundStatus" )
-		net.WriteBool( OV_Game_WaitingForPlayers )
-		net.WriteBool( OV_Game_PreRound )
-		net.WriteBool( OV_Game_InRound )
-		net.WriteBool( OV_Game_EndRound )
-		net.WriteInt( OV_Game_Round, 8 )
-		net.WriteInt( OV_Game_MaxRounds, 8 )
-	net.Send( ply )
-
-	if ( timer.Exists( "OV_RoundTimer" ) ) then
-	
-		net.Start( "OV_SendTimerCount" )
-			net.WriteFloat( timer.TimeLeft( "OV_RoundTimer" ) )
-		net.Send( ply )
-	
-	end
-
-	net.Start( "OV_SettingsEnabled" )
-		net.WriteBool( GetConVar( "ov_sv_enable_player_radar" ):GetBool() )
-		net.WriteBool( GetConVar( "ov_sv_enable_player_ranking" ):GetBool() )
-	net.Send( ply )
+	-- Full network update
+	FullNetworkUpdate( ply )
 
 end
 
@@ -181,11 +155,8 @@ end
 -- Called when the player spawns
 function GM:PlayerSpawn( ply )
 
-	-- Player is excluded from the game
-	if ( ply.excludeFromGame ) then ply:SetTeam( TEAM_SPECTATOR ) end
-
 	-- Player is in spectator
-	if ( ply:Team() == TEAM_SPECTATOR ) then
+	if ( ply:IsSpectating() ) then
 	
 		GAMEMODE:PlayerSpawnAsSpectator( ply )
 		return
@@ -211,44 +182,53 @@ function GM:PlayerSpawn( ply )
 	ply:SetFOV( 0, 0 )
 	ply:SetColor( Color( 255, 255, 255 ) )
 	ply:SetBloodColor( BLOOD_COLOR_RED )
-	ply:SetInfectionStatus( 0 )
-	ply:SetEnragedStatus( 0 )
-	ply:SetAdrenalineStatus( 0 )
+	ply:SetInfectionStatus( false )
+	ply:SetEnragedStatus( false )
+	ply:SetAdrenalineStatus( false )
 	ply.timeInfectionStatus = 0
 	ply.timeAdrenalineStatus = 0
 
 	-- Time the Infection status
-	if ( ply:Team() == TEAM_INFECTED ) then ply.timeInfectionStatus = CurTime() + 2 end
+	if ( ply:IsInfected() ) then
+	
+		ply.timeInfectionStatus = CurTime() + 2
+	
+	end
 
 	-- Player Speed
-	if ( ply:Team() == TEAM_SURVIVOR ) then
+	if ( ply:IsSurvivor() ) then
 	
-		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.OV_Survivor_Speed, GAMEMODE.OV_Survivor_Speed )
+		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.SurvivorSpeed, GAMEMODE.SurvivorSpeed )
 	
-	elseif ( ( ply:Team() == TEAM_SPECTATOR ) || ( ply:Team() == TEAM_INFECTED ) ) then
+	elseif ( !ply:IsSurvivor() ) then
 	
-		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.OV_Infected_Speed, GAMEMODE.OV_Infected_Speed )
+		GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.InfectedSpeed, GAMEMODE.InfectedSpeed )
 	
 	end
 
 	-- Player Loadout
-	if ( !GetConVar( "ov_sv_survivor_mystery_weapons" ):GetBool() || OV_Game_InRound ) then hook.Call( "PlayerLoadout", GAMEMODE, ply ) end
+	local enableMysteryWeapons = GetConVar( "ov_sv_survivor_mystery_weapons" )
+	if ( !enableMysteryWeapons:GetBool() || ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) ) then
+	
+		hook.Call( "PlayerLoadout", GAMEMODE, ply )
+	
+	end
 
 	-- Player Model
 	hook.Call( "PlayerSetModel", GAMEMODE, ply )
 
 	-- Do a spawn effect for clients
-	if ( ply:Team() == TEAM_SURVIVOR ) then
+	if ( ply:IsSurvivor() ) then
 	
-		local spawneffect = EffectData()
-		spawneffect:SetOrigin( ply:GetPos() + Vector( 0, 0, 36 ) )
-		util.Effect( "survivorspawn", spawneffect )
+		local spawnEffect = EffectData()
+		spawnEffect:SetOrigin( ply:GetPos() + Vector( 0, 0, 36 ) )
+		util.Effect( "survivorspawn", spawnEffect )
 	
-	elseif ( ply:Team() == TEAM_INFECTED ) then
+	elseif ( ply:IsInfected() ) then
 	
-		local spawneffect = EffectData()
-		spawneffect:SetOrigin( ply:GetPos() + Vector( 0, 0, 36 ) )
-		util.Effect( "infectedspawn", spawneffect )
+		local spawnEffect = EffectData()
+		spawnEffect:SetOrigin( ply:GetPos() + Vector( 0, 0, 36 ) )
+		util.Effect( "infectedspawn", spawnEffect )
 	
 	end
 
@@ -264,42 +244,28 @@ function GM:PlayerSetModel( ply )
 	-- Run this like normal
 	player_manager.RunClass( ply, "SetModel" )
 
-	-- Bots
-	if ( ply:IsBot() ) then
-	
-		ply:SetModel( table.Random( player_manager.AllValidModels() ) )
-	
-	end
-
 	-- Infected player
-	if ( ply:Team() == TEAM_INFECTED ) then
+	if ( ply:IsInfected() ) then
 	
-		ply:SetModel( GAMEMODE.OV_Infected_Model )
+		ply:SetModel( GAMEMODE.InfectedModel )
 	
 	end
 
 	-- Set the player model to something different
-	if ( ( ply:Team() == TEAM_SURVIVOR ) && ( ply:GetModel() == GAMEMODE.OV_Infected_Model ) ) then
+	if ( ply:IsSurvivor() && ( ply:GetModel() == GAMEMODE.InfectedModel ) ) then
 	
 		ply:SetModel( "models/player/kleiner.mdl" )
 	
 	end
 
 	-- Last but not least we should set the model color
-	if ( ply:Team() == TEAM_SURVIVOR ) then
+	if ( ply:IsSurvivor() ) then
 	
 		ply:SetPlayerColor( Vector( ply:GetInfo( "cl_playercolor" ) ) )
 	
-		-- Bots have a random color
-		if ( ply:IsBot() ) then
-		
-			ply:SetPlayerColor( Vector( math.Rand( 0, 1 ), math.Rand( 0, 1 ), math.Rand( 0, 1 ) ) )
-		
-		end
+	elseif ( ply:IsInfected() ) then
 	
-	elseif ( ply:Team() == TEAM_INFECTED ) then
-	
-		ply:SetPlayerColor( Vector( math.Remap( 180, 0, 255, 0, 1 ), math.Remap( 255, 0, 255, 0, 1 ), 0 ) )
+		ply:SetPlayerColor( Vector( 0.7, 1, 0 ) )
 	
 	end
 
@@ -313,13 +279,13 @@ function GM:PlayerLoadout( ply )
 	ply:RemoveAllItems()
 
 	-- Waiting for players session
-	if ( OV_Game_WaitingForPlayers ) then return end
+	if ( IsRoundState( ROUNDSTATE_WAITING ) ) then return; end
 
 	-- Spectator
-	if ( ply:Team() == TEAM_SPECTATOR ) then return end
+	if ( ply:IsSpectating() ) then return; end
 
 	-- Is on infected team
-	if ( ply:Team() == TEAM_INFECTED ) then
+	if ( ply:IsInfected() ) then
 	
 		ply:SetColor( Color( 180, 255, 0 ) )
 		ply:SetBloodColor( DONT_BLEED )
@@ -330,7 +296,7 @@ function GM:PlayerLoadout( ply )
 	end
 
 	-- Survivor loadout
-	for k, v in pairs( OV_Game_WeaponLoadout ) do
+	for k, v in pairs( weaponLoadout ) do
 	
 		ply:Give( tostring( v ) )
 		if ( ply:GetWeapon( tostring( v ) ) && ply:GetWeapon( tostring( v ) ):IsValid() ) then
@@ -342,7 +308,11 @@ function GM:PlayerLoadout( ply )
 	end
 
 	-- Dual pistols get extra ammo
-	if ( ply:HasWeapon( "weapon_ov_dualpistol" ) ) then ply:GiveAmmo( 30, game.GetAmmoID( "OV_DualPistol" ), true ) end
+	if ( ply:HasWeapon( "weapon_ov_dualpistol" ) ) then
+	
+		ply:GiveAmmo( 60, game.GetAmmoID( "DualPistol" ), true )
+	
+	end
 
 end
 
@@ -350,6 +320,7 @@ end
 -- Should the player play the death sound
 function GM:PlayerDeathSound()
 
+	-- Mutes the death sound
 	return true
 
 end
@@ -367,7 +338,7 @@ end
 -- Player tries to toggle flashlight
 function GM:PlayerSwitchFlashlight( ply, on )
 
-	if ( on && ( ply:Team() != TEAM_SURVIVOR ) ) then return false end
+	if ( on && !ply:IsSurvivor() ) then return false; end
 
 	return ply:CanUseFlashlight()
 
@@ -387,7 +358,7 @@ end
 function GM:PlayerShouldTaunt( ply, id )
 
 	-- Disable taunts
-	return ov_sv_enable_player_taunting:GetBool() || false
+	return ( enablePlayerTaunting:GetBool() || false )
 
 end
 

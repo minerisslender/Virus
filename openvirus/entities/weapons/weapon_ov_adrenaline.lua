@@ -122,7 +122,7 @@ function SWEP:Think()
 		if ( SERVER ) then
 		
 			self.Owner.timeAdrenalineStatus = CurTime() + 15
-			self.Owner:SetAdrenalineStatus( 1 )
+			self.Owner:SetAdrenalineStatus( true )
 			self.Owner:EmitSound( WeaponSound, 75, 90 )
 		
 			self:Remove()
@@ -140,11 +140,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "CSTRIKETypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 2.5 ), y + ( h / 2.5 ) )
-		surface.DrawText( "G" )
+		draw.SimpleText( "G", "CSTRIKETypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

@@ -1,6 +1,6 @@
 -- This is an entity created by weapon_ov_slam
 
-if ( SERVER ) then AddCSLuaFile() end
+AddCSLuaFile()
 
 ENT.Type = "anim"
 
@@ -84,7 +84,7 @@ function ENT:Think()
 	
 		if ( self.SpriteBool ) then
 		
-			for _, ent in pairs( ents.FindInSphere( self.Entity:GetPos(), 64 ) ) do
+			for _, ent in ipairs( ents.FindInSphere( self.Entity:GetPos(), 64 ) ) do
 			
 				if ( ent:IsValid() && ent:IsPlayer() && ent:Alive() && ( ent:Team() == TEAM_INFECTED ) && ent:Visible( self.Entity ) ) then
 				
@@ -135,7 +135,7 @@ if ( CLIENT ) then
 		-- Draw a sprite
 		if ( self.SpriteBool ) then
 		
-			render.SetMaterial( OV_Material_SLAMSprite )
+			render.SetMaterial( MATERIAL_SLAM_SPRITE )
 			render.DrawSprite( self.Entity:GetPos(), 16, 16, Color( 255, 255, 255, 255 ) )
 		
 		end

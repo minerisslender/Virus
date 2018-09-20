@@ -11,7 +11,7 @@ SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 SWEP.Primary.ClipSize = 11
 SWEP.Primary.DefaultClip = 11
 SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "OV_LazerPistol"
+SWEP.Primary.Ammo = "LazerPistol"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
@@ -49,7 +49,7 @@ function SWEP:PrimaryAttack()
 
 	self.Weapon:EmitSound( WeaponSound )
 
-	self:ShootBullet( 20, 1, 0.005 )
+	self:ShootBullet( 20, 1, 0.0001 )
 
 	self:TakePrimaryAmmo( 1 )
 
@@ -95,7 +95,7 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 	bullet.TracerName = "lasertracer"
 	bullet.Force	= 1
 	bullet.Damage	= damage
-	bullet.AmmoType = "OV_LazerPistol"
+	bullet.AmmoType = "LazerPistol"
 	bullet.Callback = function( attacker, trace, info ) self:ShootFirstRicochet( attacker, trace, info ) end
 
 	self.Owner:FireBullets( bullet )
@@ -113,13 +113,13 @@ function SWEP:ShootFirstRicochet( attacker, trace, info )
 	local bullet = {}
 	bullet.Num 		= 1
 	bullet.Src 		= trace.HitPos
-	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.6 )
+	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.75 )
 	bullet.Spread 	= Vector( 0, 0, 0 )
 	bullet.Tracer	= 1
 	bullet.TracerName = "laserricotracer"
 	bullet.Force	= 1
 	bullet.Damage	= info:GetDamage() * 0.75
-	bullet.AmmoType = "OV_LazerPistol"
+	bullet.AmmoType = "LazerPistol"
 	bullet.Callback = function( attacker, trace, info ) self:ShootLastRicochet( attacker, trace, info ) end
 
 	attacker:FireBullets( bullet )
@@ -135,13 +135,13 @@ function SWEP:ShootLastRicochet( attacker, trace, info )
 	local bullet = {}
 	bullet.Num 		= 1
 	bullet.Src 		= trace.HitPos
-	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.6 )
+	bullet.Dir 		= trace.HitNormal + ( trace.Normal * 0.75 )
 	bullet.Spread 	= Vector( 0, 0, 0 )
 	bullet.Tracer	= 1
 	bullet.TracerName = "laserricotracer"
 	bullet.Force	= 1
 	bullet.Damage	= info:GetDamage() * 0.75
-	bullet.AmmoType = "OV_LazerPistol"
+	bullet.AmmoType = "LazerPistol"
 
 	attacker:FireBullets( bullet )
 
@@ -163,11 +163,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "HL2MPTypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 2.75 ), y + ( h / 2.5 ) )
-		surface.DrawText( "-" )
+		draw.SimpleText( "-", "HL2MPTypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

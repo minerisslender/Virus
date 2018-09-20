@@ -11,7 +11,7 @@ SWEP.WorldModel = "models/weapons/w_smg_mp5.mdl"
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.DefaultClip = 30
 SWEP.Primary.Automatic = true
-SWEP.Primary.Ammo = "OV_MP5"
+SWEP.Primary.Ammo = "MP5"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
@@ -74,11 +74,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
         draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-    
-		surface.SetFont( "CSTRIKETypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 3 ), y + ( h / 2.5 ) )
-		surface.DrawText( "x" )
+		draw.SimpleText( "x", "CSTRIKETypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

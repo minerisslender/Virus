@@ -1,4 +1,3 @@
-
 surface.CreateFont( "ScoreboardDefault", {
 	font	= "Helvetica",
 	size	= 22,
@@ -74,9 +73,6 @@ local PLAYER_LINE = {
 
 		self:Think( self )
 
-		--local friend = self.Player:GetFriendStatus()
-		--MsgN( pl, " Friend: ", friend )
-
 	end,
 
 	Think = function( self )
@@ -99,13 +95,12 @@ local PLAYER_LINE = {
 
 		if ( self.NumPing == nil || self.NumPing != self.Player:Ping() ) then
 			self.NumPing = self.Player:Ping()
-			if ( self.Player:GetNWBool( "OV_ServerHost" ) ) then self.NumPing = "HOST" end
-			if ( self.Player:IsBot() ) then self.NumPing = "BOT" end
+			if ( self.Player:GetNWBool( "ListenServerHost" ) ) then self.NumPing = "HOST"; end
 			self.Ping:SetText( self.NumPing )
 		end
 
-		if ( self.STime == nil || self.STime != math.Round( self.Player:GetNWFloat( "OV_TimeSurvived", 0 ), 2 ) ) then
-			self.STime = math.Round( self.Player:GetNWFloat( "OV_TimeSurvived", 0 ), 2 )
+		if ( self.STime == nil || self.STime != math.Round( self.Player:GetNWFloat( "SurvivorTimeSurvived", 0 ), 2 ) ) then
+			self.STime = math.Round( self.Player:GetNWFloat( "SurvivorTimeSurvived", 0 ), 2 )
 			if ( self.STime <= 0 ) then self.STime = "-----" end
 			self.Time:SetText( self.STime )
 		end
@@ -227,7 +222,7 @@ local SCORE_BOARD = {
 
 		self.NumPlayers:SetText( "Players: "..player.GetCount() )
 
-		self.RoundDisplay:SetText( "Round: "..OV_Game_Round.."/"..OV_Game_MaxRounds )
+		self.RoundDisplay:SetText( "Round: "..GetRoundNumber().."/"..GetMaxRounds() )
 
 		--
 		-- Loop through each player, and if one doesn't have a score entry - create it.

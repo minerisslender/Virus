@@ -11,7 +11,7 @@ SWEP.WorldModel = "models/weapons/w_357.mdl"
 SWEP.Primary.ClipSize = 1
 SWEP.Primary.DefaultClip = 1
 SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "OV_Flak"
+SWEP.Primary.Ammo = "Flak"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
@@ -78,7 +78,7 @@ function SWEP:ShootBullet( damage, num_bullets, aimcone )
 	bullet.TracerName = "flaktracer"
 	bullet.Force	= 50
 	bullet.Damage	= damage
-	bullet.AmmoType = "OV_Flak"
+	bullet.AmmoType = "Flak"
 
 	self.Owner:FireBullets( bullet )
 
@@ -93,11 +93,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "HL2MPTypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 3 ), y + ( h / 2.5 ) )
-		surface.DrawText( "." )
+		draw.SimpleText( ".", "HL2MPTypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

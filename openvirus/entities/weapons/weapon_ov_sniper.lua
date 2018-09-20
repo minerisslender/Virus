@@ -11,7 +11,7 @@ SWEP.WorldModel = "models/weapons/w_snip_scout.mdl"
 SWEP.Primary.ClipSize = 10
 SWEP.Primary.DefaultClip = 10
 SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "OV_Sniper"
+SWEP.Primary.Ammo = "Sniper"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
@@ -163,11 +163,7 @@ if ( CLIENT ) then
 	function SWEP:DrawWeaponSelection( x, y, w, h, a )
 	
 		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-	
-		surface.SetFont( "CSTRIKETypeDeath" )
-		surface.SetTextColor( 255, 255, 255, a )
-		surface.SetTextPos( x + ( w / 3.25 ), y + ( h / 2.5 ) )
-		surface.DrawText( "n" )
+		draw.SimpleText( "n", "CSTRIKETypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 	
 	end
 

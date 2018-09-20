@@ -9,33 +9,6 @@
 	{
 		1
 		{
-			"name"	"ov_sv_infection_serverside_only"
-			"text"	"[INFECTION] Serverside Only"
-			"help"	"Disable client-sided infecting and forces server-side infecting instead. Doesn't help people with lag problems."
-			"type"	"CheckBox"
-			"default"	"0"
-		}
-	
-		2
-		{
-			"name"	"ov_sv_infection_clientside_valid_distance"
-			"text"	"[INFECTION] Client Distance"
-			"help"	"With client-side infection, we make sure the distance between players is considered valid. This can prevent client-side scripts from being able to cheat."
-			"type"	"Numeric"
-			"default"	"256"
-		}
-	
-		3
-		{
-			"name"	"ov_sv_infected_blood"
-			"text"	"[INFECTED] Blood Effects"
-			"help"	"Enable the infected blood effects."
-			"type"	"CheckBox"
-			"default"	"1"
-		}
-	
-		4
-		{
 			"name"	"ov_sv_survivor_css_hands"
 			"text"	"[SURVIVOR] Counter-Strike Hands"
 			"help"	"Hands will be forced as CS:S hands for survivors."
@@ -43,7 +16,7 @@
 			"default"	"1"
 		}
 	
-		5
+		2
 		{
 			"name"	"ov_sv_enable_player_radar"
 			"text"	"[GAME] Enable Radar"
@@ -52,7 +25,7 @@
 			"default"	"1"
 		}
 	
-		6
+		3
 		{
 			"name"	"ov_sv_enable_player_ranking"
 			"text"	"[GAME] Enable Ranking"

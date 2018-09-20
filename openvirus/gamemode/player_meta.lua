@@ -2,33 +2,56 @@
 local meta = FindMetaTable( "Player" )
 if ( !meta ) then return end
 
-if ( SERVER ) then AddCSLuaFile() end
+AddCSLuaFile()
 
 
--- Functions down here
+-- Player is survivor
+function meta:IsSurvivor()
+
+	return ( self:Team() == TEAM_SURVIVOR )
+
+end
+
+
+-- Player is infected
+function meta:IsInfected()
+
+	return ( self:Team() == TEAM_INFECTED )
+
+end
+
+
+-- Player is spectating
+function meta:IsSpectating()
+
+	return ( self:Team() == TEAM_SPECTATOR )
+
+end
+
+
 -- Infect the player
 function meta:InfectPlayer( ply )
 
-	if ( CLIENT ) then return end
-	if ( self:Team() != TEAM_SURVIVOR ) then return end
+	if ( CLIENT ) then return; end
+	if ( !self:IsSurvivor() ) then return; end
 
-	if ( self:GetAdrenalineStatus() ) then self:SetAdrenalineStatus( 0 ) end
+	if ( self:GetAdrenalineStatus() ) then self:SetAdrenalineStatus( false ); end
 	self:SetTeam( TEAM_INFECTED )
 	self:SetFOV( 0, 0 )
-	self:SetHealth( GAMEMODE.OV_Infected_Health )
+	self:SetHealth( GAMEMODE.InfectedHealth )
 	self:SetBloodColor( DONT_BLEED )
-	if ( SERVER && self:FlashlightIsOn() ) then self:Flashlight( false ) end
+	if ( SERVER && self:FlashlightIsOn() ) then self:Flashlight( false ); end
 
-	GAMEMODE:SetPlayerSpeed( self, GAMEMODE.OV_Infected_Speed, GAMEMODE.OV_Infected_Speed )
+	hook.Call( "SetPlayerSpeed", GAMEMODE, self, GAMEMODE.InfectedSpeed, GAMEMODE.InfectedSpeed )
 
 	hook.Call( "PlayerLoadout", GAMEMODE, self )
 	hook.Call( "PlayerSetModel", GAMEMODE, self )
 
-	local InfoText_PLYNAME = ""
-	if ( IsValid( ply ) && ply:IsPlayer() ) then InfoText_PLYNAME = string.upper( ply:Name() ).." " end
+	local plyNick = ""
+	if ( IsValid( ply ) && ply:IsPlayer() ) then plyNick = string.upper( ply:Nick() ).." " end
 
-	net.Start( "OV_SendInfoText" )
-		net.WriteString( InfoText_PLYNAME.."INFECTED "..string.upper( self:Name() ) )
+	net.Start( "SendInformationText" )
+		net.WriteString( plyNick.."INFECTED "..string.upper( self:Nick() ) )
 		net.WriteColor( Color( 0, 255, 0 ) )
 		net.WriteInt( 5, 4 )
 	net.Broadcast()
@@ -36,28 +59,32 @@ function meta:InfectPlayer( ply )
 	-- Print in console
 	if ( IsValid( ply ) && ply:IsPlayer() ) then
 	
-		PrintMessage( HUD_PRINTCONSOLE, self:Name().." was infected by "..ply:Name().."\n" )
+		MsgAll( self:Nick().." was infected by "..ply:Nick().."\n" )
 	
 	else
 	
-		PrintMessage( HUD_PRINTCONSOLE, self:Name().." was infected\n" )
+		MsgAll( self:Nick().." was infected\n" )
 	
 	end
 
 	-- Give the player who infected this player a point
-	if ( IsValid( ply ) && ply:IsPlayer() ) then ply:AddFrags( 1 ) hook.Call( "PlayerRankCheckup", GAMEMODE ) end
+	if ( IsValid( ply ) && ply:IsPlayer() ) then
+	
+		ply:AddFrags( 1 )
+	
+	end
 
 	-- Set a time survived
-	if ( IsValid( ply ) && ply:IsPlayer() && timer.Exists( "OV_RoundTimer" ) ) then
+	if ( IsValid( ply ) && ply:IsPlayer() && IsRoundTimeActive() ) then
 	
-		self:SetNWFloat( "OV_TimeSurvived", OV_Game_MainRoundTimerCount - timer.TimeLeft( "OV_RoundTimer" ) )
+		self:SetNWFloat( "SurvivorTimeSurvived", GAME_ROUND_TIME - GetCurrentRoundTime() )
 	
 	end
 
 	-- Call the round to end if no survivors
 	if ( team.NumPlayers( TEAM_SURVIVOR ) < 1 ) then
 	
-		GAMEMODE:EndMainRound()
+		hook.Call( "EndMainRound", GAMEMODE )
 	
 	end
 
@@ -67,25 +94,25 @@ end
 -- Set the Infected Infection Status
 function meta:SetInfectionStatus( bool )
 
-	if ( CLIENT ) then return end
-	if ( !bool ) then return end
-	if ( tobool( bool ) == self:GetNWBool( "InfectionStatus", false ) ) then return end
+	if ( CLIENT ) then return; end
+	if ( !isbool( bool ) ) then return; end
+	if ( self:GetNWBool( "InfectionStatus", false ) == bool ) then return; end
 
-	if ( tobool( bool ) ) then
+	if ( bool ) then
 	
 		-- Play a sound
-		self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 110 )
+		self:EmitSound( "ambient/fire/gascan_ignite1.wav", 90, 90 )
 	
 		-- Start enraged mode here
-		if ( !GetGlobalBool( "OV_Game_PreventEnraged" ) && IsValid( self ) && ( self:Team() == TEAM_INFECTED ) && ( self:Deaths() > 1 ) ) then
+		if ( !GetPreventEnraged() && IsValid( self ) && self:IsInfected() && ( self:Deaths() > 1 ) ) then
 		
-			self:SetEnragedStatus( 1 )
+			self:SetEnragedStatus( true )
 		
 		end
 	
 	end
 
-	self:SetNWBool( "InfectionStatus", tobool( bool ) )
+	self:SetNWBool( "InfectionStatus", bool )
 
 end
 
@@ -102,15 +129,17 @@ end
 function meta:SetAdrenalineStatus( bool )
 
 	if ( CLIENT ) then return end
-	if ( !bool ) then return end
+	if ( !isbool( bool ) ) then return; end
+	if ( self:GetNWBool( "AdrenalineStatus", false ) == bool ) then return; end
+	if ( bool && !IsRoundState( ROUNDSTATE_INROUND ) && !IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) then return; end
 
-	if ( tobool( bool ) ) then
+	if ( bool ) then
 	
-		GAMEMODE:SetPlayerSpeed( self, GAMEMODE.OV_Survivor_AdrenSpeed, GAMEMODE.OV_Survivor_AdrenSpeed )
+		hook.Call( "SetPlayerSpeed", GAMEMODE, self, GAMEMODE.SurvivorAdrenSpeed, GAMEMODE.SurvivorAdrenSpeed )
 	
 	else
 	
-		GAMEMODE:SetPlayerSpeed( self, GAMEMODE.OV_Survivor_Speed, GAMEMODE.OV_Survivor_Speed )
+		hook.Call( "SetPlayerSpeed", GAMEMODE, self, GAMEMODE.SurvivorSpeed, GAMEMODE.SurvivorSpeed )
 	
 	end
 
@@ -131,19 +160,20 @@ end
 function meta:SetEnragedStatus( bool )
 
 	if ( CLIENT ) then return end
-	if ( !bool ) then return end
+	if ( !isbool( bool ) ) then return; end
+	if ( self:GetNWBool( "EnragedStatus", false ) == bool ) then return; end
 
 	if ( tobool( bool ) ) then
 	
-		if ( self:Team() == TEAM_INFECTED ) then
+		if ( self:IsInfected() ) then
 		
-			GAMEMODE:SetPlayerSpeed( self, GAMEMODE.OV_Infected_EnrageSpeed, GAMEMODE.OV_Infected_EnrageSpeed )
+			hook.Call( "SetPlayerSpeed", GAMEMODE, self, GAMEMODE.InfectedEnrageSpeed, GAMEMODE.InfectedEnrageSpeed )
 			self:SetColor( Color( 255, 180, 0 ) )
-			self:SetPlayerColor( Vector( math.Remap( 255, 0, 255, 0, 1 ), math.Remap( 180, 0, 255, 0, 1 ), 0 ) )
-			self:SetMaxHealth( GAMEMODE.OV_Infected_EnrageHealth )
-			self:SetHealth( GAMEMODE.OV_Infected_EnrageHealth )
+			self:SetPlayerColor( Vector( 1, 0.7, 0 ) )
+			self:SetMaxHealth( GAMEMODE.InfectedEnrageHealth )
+			self:SetHealth( GAMEMODE.InfectedEnrageHealth )
 		
-			net.Start( "OV_SendInfoText" )
+			net.Start( "SendInformationText" )
 				net.WriteString( string.upper( self:Name() ).." IS ENRAGED" )
 				net.WriteColor( Color( 255, 0, 0 ) )
 				net.WriteInt( 5, 4 )
@@ -153,15 +183,15 @@ function meta:SetEnragedStatus( bool )
 	
 	else
 	
-		if ( self:Team() == TEAM_INFECTED ) then
+		if ( self:IsInfected() ) then
 		
-			GAMEMODE:SetPlayerSpeed( self, GAMEMODE.OV_Infected_Speed, GAMEMODE.OV_Infected_Speed )
+			hook.Call( "SetPlayerSpeed", GAMEMODE, self, GAMEMODE.InfectedSpeed, GAMEMODE.InfectedSpeed )
 			self:SetColor( Color( 180, 255, 0 ) )
-			self:SetPlayerColor( Vector( math.Remap( 180, 0, 255, 0, 1 ), math.Remap( 255, 0, 255, 0, 1 ), 0 ) )
-			self:SetMaxHealth( GAMEMODE.OV_Infected_Health )
-			if ( self:Alive() && ( self:Health() > GAMEMODE.OV_Infected_Health ) ) then
+			self:SetPlayerColor( Vector( 0.7, 1, 0 ) )
+			self:SetMaxHealth( GAMEMODE.InfectedHealth )
+			if ( self:Alive() && ( self:Health() > GAMEMODE.InfectedHealth ) ) then
 			
-				self:SetHealth( GAMEMODE.OV_Infected_Health )
+				self:SetHealth( GAMEMODE.InfectedHealth )
 			
 			end
 		
