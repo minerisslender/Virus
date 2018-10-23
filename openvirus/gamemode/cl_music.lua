@@ -2,7 +2,37 @@
 
 
 -- Console Variables
-local enableRoundMusic = CreateClientConVar( "ov_cl_round_music", "1", true, false )
+local enableRoundMusic = CreateClientConVar( "ov_cl_round_music", 1, true, false )
+
+
+-- This is used internally for a loop timer (just in case you do not want a looped WAV file)
+local validLoopMusic = {}
+function GM:SetupMusicLooping()
+
+	-- Clear the loop table
+	validLoopMusic = {}
+
+	-- Create this directory if it does not exist
+	if ( !file.Exists( "openvirus/client/music_loop", "DATA" ) ) then
+	
+		file.CreateDir( "openvirus/client/music_loop" )
+	
+	end
+
+	-- Begin searching this folder for text files
+	local fileList, folderList = file.Find( "openvirus/client/music_loop/*.txt", "DATA" )
+	for k, v in ipairs( fileList ) do
+	
+		local convertedTable = util.KeyValuesToTable( file.Read( "openvirus/client/music_loop/"..v, "DATA" ) )
+		for k2, v2 in pairs( convertedTable ) do
+		
+			validLoopMusic[ k2 ] = v2
+		
+		end
+	
+	end
+
+end
 
 
 -- Adds the music path to the game
@@ -49,54 +79,78 @@ function GM:AddMusicPath( path, musicType, fileType )
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #waitingForPlayersMusic + 1
-			waitingForPlayersMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			waitingForPlayersMusic[ index ]:SetSoundLevel( 0 )
-			waitingForPlayersMusic[ index ]:Stop()
+			waitingForPlayersMusic[ index ] = {}
+			waitingForPlayersMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			waitingForPlayersMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			waitingForPlayersMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchPath..v ] ) then
+			
+				waitingForPlayersMusic[ index ][ "duration" ] = validLoopMusic[ searchPath..v ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_PREROUND ) then
 		
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #preRoundMusic + 1
-			preRoundMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			preRoundMusic[ index ]:SetSoundLevel( 0 )
-			preRoundMusic[ index ]:Stop()
+			preRoundMusic[ index ] = {}
+			preRoundMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			preRoundMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			preRoundMusic[ index ][ "sound" ]:Stop()
 		
 		elseif ( musicType == ROUNDMUSIC_INROUND ) then
 		
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #inRoundMusic + 1
-			inRoundMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			inRoundMusic[ index ]:SetSoundLevel( 0 )
-			inRoundMusic[ index ]:Stop()
+			inRoundMusic[ index ] = {}
+			inRoundMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			inRoundMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			inRoundMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchPath..v ] ) then
+			
+				inRoundMusic[ index ][ "duration" ] = validLoopMusic[ searchPath..v ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_LASTSURVIVOR ) then
 		
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #lastSurvivorMusic + 1
-			lastSurvivorMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			lastSurvivorMusic[ index ]:SetSoundLevel( 0 )
-			lastSurvivorMusic[ index ]:Stop()
+			lastSurvivorMusic[ index ] = {}
+			lastSurvivorMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			lastSurvivorMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			lastSurvivorMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchPath..v ] ) then
+			
+				lastSurvivorMusic[ index ][ "duration" ] = validLoopMusic[ searchPath..v ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_INFECTEDWIN ) then
 		
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #infectedWinMusic + 1
-			infectedWinMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			infectedWinMusic[ index ]:SetSoundLevel( 0 )
-			infectedWinMusic[ index ]:Stop()
+			infectedWinMusic[ index ] = {}
+			infectedWinMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			infectedWinMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			infectedWinMusic[ index ][ "sound" ]:Stop()
 		
 		elseif ( musicType == ROUNDMUSIC_SURVIVORSWIN ) then
 		
 			util.PrecacheSound( searchPath..v )
 		
 			local index = #survivorsWinMusic + 1
-			survivorsWinMusic[ index ] = CreateSound( game.GetWorld(), searchPath..v )
-			survivorsWinMusic[ index ]:SetSoundLevel( 0 )
-			survivorsWinMusic[ index ]:Stop()
+			survivorsWinMusic[ index ] = {}
+			survivorsWinMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchPath..v )
+			survivorsWinMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			survivorsWinMusic[ index ][ "sound" ]:Stop()
 		
 		else
 		
@@ -124,54 +178,78 @@ function GM:AddMusicFile( searchFile, musicType )
 			util.PrecacheSound( searchFile )
 		
 			local index = #waitingForPlayersMusic + 1
-			waitingForPlayersMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			waitingForPlayersMusic[ index ]:SetSoundLevel( 0 )
-			waitingForPlayersMusic[ index ]:Stop()
+			waitingForPlayersMusic[ index ] = {}
+			waitingForPlayersMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			waitingForPlayersMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			waitingForPlayersMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchFile ] ) then
+			
+				waitingForPlayersMusic[ index ][ "duration" ] = validLoopMusic[ searchFile ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_PREROUND ) then
 		
 			util.PrecacheSound( searchFile )
 		
 			local index = #preRoundMusic + 1
-			preRoundMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			preRoundMusic[ index ]:SetSoundLevel( 0 )
-			preRoundMusic[ index ]:Stop()
+			preRoundMusic[ index ] = {}
+			preRoundMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			preRoundMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			preRoundMusic[ index ][ "sound" ]:Stop()
 		
 		elseif ( musicType == ROUNDMUSIC_INROUND ) then
 		
 			util.PrecacheSound( searchFile )
 		
 			local index = #inRoundMusic + 1
-			inRoundMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			inRoundMusic[ index ]:SetSoundLevel( 0 )
-			inRoundMusic[ index ]:Stop()
+			inRoundMusic[ index ] = {}
+			inRoundMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			inRoundMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			inRoundMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchFile ] ) then
+			
+				inRoundMusic[ index ][ "duration" ] = validLoopMusic[ searchFile ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_LASTSURVIVOR ) then
 		
 			util.PrecacheSound( searchFile )
 		
 			local index = #lastSurvivorMusic + 1
-			lastSurvivorMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			lastSurvivorMusic[ index ]:SetSoundLevel( 0 )
-			lastSurvivorMusic[ index ]:Stop()
+			lastSurvivorMusic[ index ] = {}
+			lastSurvivorMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			lastSurvivorMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			lastSurvivorMusic[ index ][ "sound" ]:Stop()
+		
+			if ( validLoopMusic && validLoopMusic[ searchFile ] ) then
+			
+				lastSurvivorMusic[ index ][ "duration" ] = validLoopMusic[ searchFile ]
+			
+			end
 		
 		elseif ( musicType == ROUNDMUSIC_INFECTEDWIN ) then
 		
 			util.PrecacheSound( searchFile )
 		
 			local index = #infectedWinMusic + 1
-			infectedWinMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			infectedWinMusic[ index ]:SetSoundLevel( 0 )
-			infectedWinMusic[ index ]:Stop()
+			infectedWinMusic[ index ] = {}
+			infectedWinMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			infectedWinMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			infectedWinMusic[ index ][ "sound" ]:Stop()
 		
 		elseif ( musicType == ROUNDMUSIC_SURVIVORSWIN ) then
 		
 			util.PrecacheSound( searchFile )
 		
 			local index = #survivorsWinMusic + 1
-			survivorsWinMusic[ index ] = CreateSound( game.GetWorld(), searchFile )
-			survivorsWinMusic[ index ]:SetSoundLevel( 0 )
-			survivorsWinMusic[ index ]:Stop()
+			survivorsWinMusic[ index ] = {}
+			survivorsWinMusic[ index ][ "sound" ] = CreateSound( game.GetWorld(), searchFile )
+			survivorsWinMusic[ index ][ "sound" ]:SetSoundLevel( 0 )
+			survivorsWinMusic[ index ][ "sound" ]:Stop()
 		
 		else
 		
@@ -193,39 +271,45 @@ function SetRoundMusic( len )
 
 	if ( musicState <= ROUNDMUSIC_STOP ) then
 	
+		if ( timer.Exists( "MusicDuration" ) ) then
+		
+			timer.Destroy( "MusicDuration" )
+		
+		end
+	
 		for k, v in pairs( waitingForPlayersMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
 		for k, v in pairs( preRoundMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
 		for k, v in pairs( inRoundMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
 		for k, v in pairs( lastSurvivorMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
 		for k, v in pairs( infectedWinMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
 		for k, v in pairs( survivorsWinMusic ) do
 		
-			v:Stop()
+			v[ "sound" ]:Stop()
 		
 		end
 	
@@ -233,7 +317,14 @@ function SetRoundMusic( len )
 	
 		if ( #waitingForPlayersMusic > 0 ) then
 		
-			table.Random( waitingForPlayersMusic ):Play()
+			local selectedMusic = table.Random( waitingForPlayersMusic )
+			selectedMusic[ "sound" ]:Play()
+		
+			if ( !timer.Exists( "MusicDuration" ) && selectedMusic[ "duration" ] ) then
+			
+				timer.Create( "MusicDuration", selectedMusic[ "duration" ], 0, function() selectedMusic[ "sound" ]:Stop(); selectedMusic[ "sound" ]:Play(); end )
+			
+			end
 		
 		end
 	
@@ -241,7 +332,8 @@ function SetRoundMusic( len )
 	
 		if ( #preRoundMusic > 0 ) then
 		
-			table.Random( preRoundMusic ):Play()
+			local selectedMusic = table.Random( preRoundMusic )
+			selectedMusic[ "sound" ]:Play()
 		
 		end
 	
@@ -249,7 +341,14 @@ function SetRoundMusic( len )
 	
 		if ( #inRoundMusic > 0 ) then
 		
-			table.Random( inRoundMusic ):Play()
+			local selectedMusic = table.Random( inRoundMusic )
+			selectedMusic[ "sound" ]:Play()
+		
+			if ( !timer.Exists( "MusicDuration" ) && selectedMusic[ "duration" ] ) then
+			
+				timer.Create( "MusicDuration", selectedMusic[ "duration" ], 0, function() selectedMusic[ "sound" ]:Stop(); selectedMusic[ "sound" ]:Play(); end )
+			
+			end
 		
 		end
 	
@@ -257,7 +356,14 @@ function SetRoundMusic( len )
 	
 		if ( #lastSurvivorMusic > 0 ) then
 		
-			table.Random( lastSurvivorMusic ):Play()
+			local selectedMusic = table.Random( lastSurvivorMusic )
+			selectedMusic[ "sound" ]:Play()
+		
+			if ( !timer.Exists( "MusicDuration" ) && selectedMusic[ "duration" ] ) then
+			
+				timer.Create( "MusicDuration", selectedMusic[ "duration" ], 0, function() selectedMusic[ "sound" ]:Stop(); selectedMusic[ "sound" ]:Play(); end )
+			
+			end
 		
 		end
 	
@@ -265,7 +371,8 @@ function SetRoundMusic( len )
 	
 		if ( #infectedWinMusic > 0 ) then
 		
-			table.Random( infectedWinMusic ):Play()
+			local selectedMusic = table.Random( infectedWinMusic )
+			selectedMusic[ "sound" ]:Play()
 		
 		end
 	
@@ -273,7 +380,8 @@ function SetRoundMusic( len )
 	
 		if ( #survivorsWinMusic > 0 ) then
 		
-			table.Random( survivorsWinMusic ):Play()
+			local selectedMusic = table.Random( survivorsWinMusic )
+			selectedMusic[ "sound" ]:Play()
 		
 		end
 	
@@ -281,24 +389,3 @@ function SetRoundMusic( len )
 
 end
 net.Receive( "SetRoundMusic", SetRoundMusic )
-
-
--- Debug purposes only
-function GM:PrintMusicTable()
-
-	print( "-= START =-" )
-	print( "Waiting For Players:" )
-	PrintTable( waitingForPlayersMusic )
-	print( "Pre-Round:" )
-	PrintTable( preRoundMusic )
-	print( "Main Round:" )
-	PrintTable( inRoundMusic )
-	print( "Last Survivor:" )
-	PrintTable( lastSurvivorMusic )
-	print( "Infected Win:" )
-	PrintTable( infectedWinMusic )
-	print( "Survivors Win:" )
-	PrintTable( survivorsWinMusic )
-	print( "-= END =-" )
-
-end

@@ -18,8 +18,7 @@ end
 
 
 -- ConVars
-local blockKeys = CreateConVar( "ov_shared_block_keys", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
-local translateActivities = CreateConVar( "ov_shared_translate_activities", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY, FCVAR_REPLICATED }, "Additional player activities (animations)." )
+local blockKeys = CreateConVar( "ov_shared_block_keys", 1, { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Block certain movement keys for a better GMT/TU experience." )
 
 
 -- Functions down here
@@ -28,7 +27,7 @@ GM.Name = "open Virus"
 GM.Author = "daunknownfox2010"
 GM.Email = "N/A"
 GM.Website = "N/A"
-GM.Version = "rev33 (Public Beta)"
+GM.Version = "rev34 (Public Beta)"
 
 
 -- Some global stuff here
@@ -44,14 +43,10 @@ GM.InfectedModel = "models/player/corpse1.mdl"
 -- Translate player activities
 function VirusTranslateActivity( ply, act )
 
-	if ( translateActivities:GetBool() ) then
+	-- Infected run
+	if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_INFECTED ) && ( act == ACT_MP_RUN ) ) then
 	
-		-- Survivor run
-		if ( IsValid( ply ) && ply:Alive() && ( ply:Team() == TEAM_SURVIVOR ) && !IsValid( ply:GetActiveWeapon() ) && ( act == ACT_MP_RUN ) ) then
-		
-			return ACT_HL2MP_RUN_FAST
-		
-		end
+		return ACT_HL2MP_RUN_FAST
 	
 	end
 

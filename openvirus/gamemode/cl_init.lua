@@ -11,18 +11,15 @@ include( "shared.lua" )
 
 
 -- ConVars
-local enableScreenspaceEffects = CreateClientConVar( "ov_cl_screenspace_effects", "1", true, false )
-local enableSoundDSPEffects = CreateClientConVar( "ov_cl_sound_dsp_effects", "1", true, false )
-local enableGeigerCounter = CreateClientConVar( "ov_cl_geigercounter", "1", true, false )
-local enableCameraRoll = CreateClientConVar( "ov_cl_camera_roll", "1", true, false )
-local enableInfectedBlood = CreateClientConVar( "ov_cl_infected_blood", "1", true, false )
+local enableScreenspaceEffects = CreateClientConVar( "ov_cl_screenspace_effects", 1, true, false )
+local enableSoundDSPEffects = CreateClientConVar( "ov_cl_sound_dsp_effects", 1, true, false )
+local enableGeigerCounter = CreateClientConVar( "ov_cl_geigercounter", 1, true, false )
+local enableCameraRoll = CreateClientConVar( "ov_cl_camera_roll", 1, true, false )
+local enableInfectedBlood = CreateClientConVar( "ov_cl_infected_blood", 1, true, false )
 
 
 -- Called when the game is initialized
 function GM:Initialize()
-
-	-- Hide scoreboard
-	GAMEMODE.ShowScoreboard = false
 
 	-- Create this directory if it does not exist
 	if ( !file.Exists( "openvirus", "DATA" ) ) then
@@ -46,6 +43,9 @@ function GM:Initialize()
 	
 	end
 
+	-- Hide scoreboard
+	GAMEMODE.ShowScoreboard = false
+
 end
 
 
@@ -66,6 +66,9 @@ end
 
 -- Initialize the sounds and music
 function GM:InitializeSounds()
+
+	-- Allows music to loop
+	hook.Call( "SetupMusicLooping", GAMEMODE )
 
 	-- Waiting For Players music
 	hook.Call( "AddMusicPath", GAMEMODE, "openvirus/music/wfp/", ROUNDMUSIC_WFP, "wav" )

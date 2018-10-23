@@ -12,10 +12,10 @@ AddCSLuaFile( "cl_scoreboard.lua" )
 
 
 -- ConVars
-local useCSSHands = CreateConVar( "ov_sv_survivor_css_hands", "1", FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
-local enablePlayerRadar = CreateConVar( "ov_sv_enable_player_radar", "1", FCVAR_NOTIFY, "Players can see the radar." )
-local enablePlayerRanking = CreateConVar( "ov_sv_enable_player_ranking", "1", { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
-local enableMysteryWeapons = CreateConVar( "ov_sv_survivor_mystery_weapons", "0", FCVAR_NOTIFY, "Survivors get their weapons when the round begins instead of on spawn." )
+local useCSSHands = CreateConVar( "ov_sv_survivor_css_hands", 1, FCVAR_ARCHIVE, "Hands will be forced as CS:S hands for survivors." )
+local enablePlayerRadar = CreateConVar( "ov_sv_enable_player_radar", 1, FCVAR_NOTIFY, "Players can see the radar." )
+local enablePlayerRanking = CreateConVar( "ov_sv_enable_player_ranking", 1, { FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Announce player ranks during the game." )
+local enableMysteryWeapons = CreateConVar( "ov_sv_survivor_mystery_weapons", 0, FCVAR_NOTIFY, "Survivors get their weapons when the round begins instead of on spawn." )
 
 
 -- Called when the game is initialized
@@ -344,14 +344,8 @@ end
 -- 4 players or over this should begin
 function GM:BeginWaitingSession()
 
-	-- Stop the music
-	SetRoundMusic( ROUNDMUSIC_STOP )
-
 	-- Round Time
 	SetRoundTime( 15 )
-
-	-- Start some music
-	SetRoundMusic( ROUNDMUSIC_WFP )
 
 end
 
