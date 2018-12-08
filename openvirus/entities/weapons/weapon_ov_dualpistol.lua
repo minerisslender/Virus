@@ -5,8 +5,9 @@ SWEP.UseHands = true
 
 SWEP.ViewModelFOV = 62
 SWEP.ViewModelFlip = false
-SWEP.ViewModel = "models/weapons/cstrike/c_pist_elite.mdl"
-SWEP.WorldModel = "models/weapons/w_pist_elite.mdl"
+SWEP.ViewModel = "models/weapons/v_pvp_akimbo.mdl"
+SWEP.WorldModel = "models/weapons/w_pvp_akimbo.mdl"
+SWEP.Base = "tfa_gun_base"
 
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.DefaultClip = 30
