@@ -55,8 +55,10 @@ local TIMER_PANEL = {
 	
 		-- Draw the Timer
 		if ( !IsRoundState( ROUNDSTATE_PREROUND ) && !IsRoundState( ROUNDSTATE_ENDROUND ) && IsRoundTimeActive() ) then
+		surface.SetMaterial( MATERIAL_TIME )
 		
 			-- Paint the timer
+			surface.SetMaterial( MATERIAL_TIME )
 			draw.RoundedBox( ControlledScreenScale( 4 ), 0, 0, w, h, Color( hudColor.r, hudColor.g, hudColor.b, 200 ) )
 		
 			-- Draw the text

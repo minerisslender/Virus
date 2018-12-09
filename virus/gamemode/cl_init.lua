@@ -712,7 +712,7 @@ function GM:ShowHelp()
 	local helplabel = vgui.Create( "DLabel", helppanel )
 	helplabel:SetPos( 2, 2 )
 	helplabel:SetColor( Color( 0, 0, 0, 255 ) )
-	helplabel:SetText( "How to play open Virus:\n\nThe gamemode is essentially zombie survival but with fast-paced rounds.\nSurvivors must survive the entire round (typically 90 seconds) in order to win.\nInfected must spread the virus to all survivors within the given time in order to win.\n\nPlayers CANNOT use basic movement keys such as crouching, jumping or zooming.\nSurvivors can use C to quick-switch to adrenaline.\nSurvivors should work as a team.\nInfected must be aware of SLAMs.\nInfected must run into players to infect them." )
+	helplabel:SetText( "How to play Virus:\n\nThe gamemode is essentially zombie survival but with fast-paced rounds.\nSurvivors must survive the entire round (typically 90 seconds) in order to win.\nInfected must spread the virus to all survivors within the given time in order to win.\n\nPlayers CANNOT use basic movement keys such as crouching, jumping or zooming.\nSurvivors can use C to quick-switch to adrenaline.\nSurvivors should work as a team.\nInfected must be aware of SLAMs.\nInfected must run into players to infect them." )
 	helplabel:SizeToContents()
 
 	local helplabel_size_x, helplabel_size_y = helplabel:GetSize()

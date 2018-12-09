@@ -42,6 +42,7 @@ local RANKING_PANEL = {
 	
 		-- If cl_drawhud is 0 or we are spectator
 		if ( !GetConVar( "cl_drawhud" ):GetBool() ) then return; end
+		
 	
 		-- Colour depending on team
 		local hudColor = Color( 0, 0, 100 )
@@ -56,6 +57,7 @@ local RANKING_PANEL = {
 		
 			storedFrags = LocalPlayer():Frags()
 			storedFragsTime = CurTime() + 4
+
 		
 		end
 	
@@ -66,11 +68,12 @@ local RANKING_PANEL = {
 			if ( ( IsRoundState( ROUNDSTATE_INROUND ) || IsRoundState( ROUNDSTATE_LASTSURVIVOR ) ) && ( localPlayerRank != 0 ) && !LocalPlayer():IsSpectating() ) then
 			
 				draw.RoundedBox( ControlledScreenScale( 4 ), 0, 0, w, h, Color( hudColor.r, hudColor.g, hudColor.b, 200 ) )
+
 			
 				local rankAlpha = ( ( 0.5 - math.Clamp( storedFragsTime - CurTime(), 0, 0.5 ) ) / 0.5 ) * 255
 				draw.SimpleTextOutlined( "RANK", "RankingDefault", w / 2, h - ControlledScreenScale( 4 ), Color( 255, 255, 255, rankAlpha ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, ControlledScreenScale( 1 ), Color( 0, 0, 0, rankAlpha ) )
 				draw.SimpleTextOutlined( localPlayerRank, "RankingDisplayDefault", w / 2, h - ControlledScreenScale( 16 ), Color( 255, 255, 255, rankAlpha ), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, ControlledScreenScale( 1 ), Color( 0, 0, 0, rankAlpha ) )
-			
+				
 				if ( storedFragsTime >= CurTime() ) then
 				
 					local fragsAlpha = ( math.Clamp( storedFragsTime - CurTime(), 0, 0.5 ) / 0.5 ) * 255

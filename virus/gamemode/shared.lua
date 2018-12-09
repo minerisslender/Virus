@@ -23,8 +23,8 @@ local blockKeys = CreateConVar( "ov_shared_block_keys", 1, { FCVAR_NOTIFY, FCVAR
 
 -- Functions down here
 -- Name, Author, Email and Website
-GM.Name = "open Virus"
-GM.Author = "daunknownfox2010"
+GM.Name = "Virus"
+GM.Author = "daunknownfox2010 Edited by Flynn"
 GM.Email = "N/A"
 GM.Website = "N/A"
 GM.Version = "rev34 (Public Beta)"
