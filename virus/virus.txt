@@ -1,7 +1,7 @@
-"openvirus"
+"virus"
 {
-	"title"		"open Virus"
-	"maps"		"^ov_"
+	"title"		"Virus"
+	"maps"		"^gmt_"
 	"base"		"base"
 	"menusystem"		"1"
 
