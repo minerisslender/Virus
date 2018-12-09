@@ -1,172 +1,87 @@
 -- Laser Rifle
 
 SWEP.PrintName = "#weapon_ov_laserrifle"
-SWEP.UseHands = true
-
-SWEP.ViewModelFOV = 58
-SWEP.ViewModelFlip = false
-SWEP.ViewModel = "models/weapons/c_irifle.mdl"
-SWEP.WorldModel = "models/weapons/w_irifle.mdl"
-
-SWEP.Primary.ClipSize = -1
-SWEP.Primary.DefaultClip = -1
-SWEP.Primary.Automatic = true
-SWEP.Primary.Ammo = "none"
-SWEP.Primary.Charge = 0
-SWEP.Primary.ChargeSlowdown = false
-
-SWEP.Secondary.ClipSize = -1
-SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "none"
-
-SWEP.Weight = 3
-SWEP.AutoSwitchTo = false
-SWEP.AutoSwitchFrom = false
-
-SWEP.Slot = 2
-SWEP.SlotPos = 3
-SWEP.DrawAmmo = false
-SWEP.DrawCrosshair = true
-SWEP.BounceWeaponIcon = false
-SWEP.DrawWeaponInfoBox = false
-
-local WeaponSound = Sound( "weapons/gauss/fire1.wav" )
-local OverChargeSound = Sound( "npc/attack_helicopter/aheli_damaged_alarm1.wav" )
-local ReChargeSound = Sound( "weapons/physcannon/physcannon_charge.wav" )
 
 
--- Initialize the weapon
-function SWEP:Initialize()
-
-	self:SetHoldType( "ar2" )
-
-end
-
-
--- Primary attack
-function SWEP:PrimaryAttack()
-
-	if ( self.Primary.Charge < 100 ) then
-	
-		if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge + 4 end
-	
-		if ( !self.Primary.ChargeSlowdown && ( self.Primary.Charge > 75 ) ) then
-		
-			self.Primary.ChargeSlowdown = true
-			self.Weapon:EmitSound( OverChargeSound, 110, 150, 0.75, CHAN_STATIC )
-		
-		end
-	
-		if ( self.Primary.Charge > 100 ) then
-		
-			self.Primary.Charge = 100
-		
-		end
-	
-	end
-
-	self.Weapon:EmitSound( WeaponSound, 90, 110 )
-
-	self:ShootBullet( 16, 1, 0.015 )
-
-	self.Owner:ViewPunch( Angle( -0.25, 0, 0 ) )
-
-	self:SetNextPrimaryFire( CurTime() + math.Clamp( self.Primary.Charge / 100, 0.125, 1 ) )
-
-end
+SWEP.Category				= "GMod Tower Tribute"
+SWEP.Author				= "Babel Industries"
+SWEP.Contact				= ""
+SWEP.Purpose				= ""
+SWEP.Instructions				= "Add a new meaning to fire power. Let waves of bullets ricochet off walls to both confuse, and destroy your enemies. Don't let the ricochets deceive you, the Raging Bull is powerful on its own."
+SWEP.MuzzleAttachment			= "1" 	-- Should be "1" for CSS models or "muzzle" for hl2 models
+SWEP.ShellEjectAttachment			= "2" 	-- Should be "2" for CSS models or "1" for hl2 models
+SWEP.PrintName				= "Raging Bull"		-- Weapon name (Shown on HUD)	
+SWEP.Slot				= 1				-- Slot in the weapon selection menu
+SWEP.SlotPos				= 21			-- Position in the slot
+SWEP.DrawAmmo				= true		-- Should draw the default HL2 ammo counter
+SWEP.DrawWeaponInfoBox			= true		-- Should draw the weapon info box
+SWEP.BounceWeaponIcon   		= 	false	-- Should the weapon icon bounce?
+SWEP.DrawCrosshair			= true		-- set false if you want no crosshair
+SWEP.Weight				= 30			-- rank relative ot other weapons. bigger is better
+SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
+SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
+SWEP.HoldType 				= "revolver"		-- how others view you carrying the weapon
+-- normal melee melee2 fist knife smg ar2 pistol rpg physgun grenade shotgun crossbow slam passive 
+-- you're mostly going to use ar2, smg, shotgun or pistol. rpg and crossbow make for good sniper rifles
 
 
--- Secondary attack
-function SWEP:SecondaryAttack()
+SWEP.SelectiveFire		= false
+SWEP.CanBeSilenced		= false
+SWEP.ViewModelFOV			= 70
+SWEP.ViewModelFlip			= true
+SWEP.ViewModel				= "models/weapons/v_pvp_ragingb.mdl"	-- Weapon view model
+SWEP.WorldModel				= "models/weapons/w_pvp_ragingb.mdl"	-- Weapon world model
+SWEP.Base				= "tfa_gun_base"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
+SWEP.FiresUnderwater = false
+SWEP.Akimbo = false
 
-	return
+SWEP.DisableChambering = true
 
-end
+SWEP.Primary.Sound			= Sound("Weapon_RagBull.fire")		-- Script that calls the primary fire sound
+SWEP.Primary.RPM			= 90			-- This is in Rounds Per Minute
+SWEP.Primary.ClipSize			= 6		-- Size of a clip
+SWEP.Primary.DefaultClip		= 120		-- Bullets you start with
+SWEP.Primary.KickUp			= 1.70					-- This is the maximum upwards recoil (rise)
+SWEP.Primary.KickDown			= 1.70							-- This is the maximum downwards recoil (skeet)
+SWEP.Primary.KickHorizontal			= 1.70							-- This is the maximum sideways recoil (no real term)
+SWEP.Primary.StaticRecoilFactor = 0.45 	--Amount of recoil to directly apply to EyeAngles.  Enter what fraction or percentage (in decimal form) you want.  This is also affected by a convar that defaults to 0.5.
+SWEP.MaxPenetrationCounter= 5
+SWEP.Primary.Automatic			= false		-- Automatic = true; Semi Auto = false
+SWEP.Primary.Ammo			= "Pistol"			-- pistol, 357, smg1, ar2, buckshot, slam, SniperPenetratedRound, AirboatGun
+-- Pistol, buckshot, and slam always ricochet. Use AirboatGun for a light metal peircing shotgun pellets
 
+SWEP.Secondary.IronFOV			= 55		-- How much you 'zoom' in. Less is more! 	
 
--- Think
-function SWEP:Think()
+SWEP.IronSightsSensitivity = 0.75
 
-	-- Primary charge
-	if ( IsValid( self.Owner ) && self.Owner:IsPlayer() && self.Owner:Alive() ) then
-	
-		if ( !self.Owner:KeyDown( IN_ATTACK ) ) then
-		
-			if ( ( ( self:GetNextPrimaryFire() + 1 ) < CurTime() ) && ( self.Primary.Charge > 0 ) ) then
-			
-				if ( IsFirstTimePredicted() ) then self.Primary.Charge = self.Primary.Charge - 0.5 end
-			
-				if ( self.Primary.ChargeSlowdown && ( self.Primary.Charge < 25 ) ) then
-				
-					self.Primary.ChargeSlowdown = false
-					self.Weapon:EmitSound( ReChargeSound, 75, 110, 0.42, CHAN_STATIC )
-				
-				end
-			
-				if ( self.Primary.Charge < 0 ) then
-				
-					self.Primary.Charge = 0
-				
-				end
-			
-			end
-		
-		end
-	
-	end
+SWEP.data 				= {}				--The starting firemode
+SWEP.data.ironsights			= 1
 
-end
+SWEP.Primary.NumShots	= 1		-- How many bullets to shoot per trigger pull
+SWEP.Primary.Damage		= 70	-- Base damage per bullet
+SWEP.Primary.Spread		= .01	-- Define from-the-hip accuracy 1 is terrible, .0001 is exact)
+SWEP.Primary.IronAccuracy = .005 -- Ironsight accuracy, should be the same for shotguns
 
+-- Enter iron sight info and bone mod info below
+SWEP.SightsPos = Vector (2.7483, -1.6223, 0.522)
+SWEP.SightsAng = Vector (0.0208, 0.002, 0)
+SWEP.RunSightsPos = Vector ()
+SWEP.RunSightsAng = Vector ()
+SWEP.InspectPos = Vector(-5.611, -3.639, -0.12)
+SWEP.InspectAng = Vector(7.539, -54.735, 0)
 
--- Shoot bullets
-function SWEP:ShootBullet( damage, num_bullets, aimcone )
-
-	local bullet = {}
-	bullet.Num 		= num_bullets
-	bullet.Src 		= self.Owner:GetShootPos()
-	bullet.Dir 		= self.Owner:GetAimVector()
-	bullet.Spread 	= Vector( aimcone, aimcone, 0 )
-	bullet.Tracer	= 1
-	bullet.TracerName = "plasmatracer"
-	bullet.Force	= 1
-	bullet.Damage	= damage
-
-	self.Owner:FireBullets( bullet )
-
-	self:ShootEffects()
-
-end
-
-
--- Whip it out (hue)
-function SWEP:Deploy()
-
-	return true
-
-end
-
-
-if ( CLIENT ) then
-
-	-- Draw a HUD
-	function SWEP:DrawHUD()
-	
-		if ( self.Primary.Charge > 0 ) then
-		
-			draw.RoundedBox( 2, ScrW() / 2 - ( ScrH() * 0.25 / 2 ), ScrH() / 1.1, ScrH() * 0.25, ScrH() * 0.025, Color( 0, 0, 0, 200 ) )
-			draw.RoundedBox( 1, ScrW() / 2 - ( ScrH() * 0.25 / 2 ) + 2, ScrH() / 1.1 + 2, ( ScrH() * 0.25 - 4 ) * ( self.Primary.Charge / 100 ), ScrH() * 0.025 - 4, Color( 255, 255 - ( ( self.Primary.Charge / 100 ) * 255 ), 255 - ( ( self.Primary.Charge / 100 ) * 255 ), 200 ) )
-		
-		end
-	
-	end
-
-	-- Draw the weapon selection box
-	function SWEP:DrawWeaponSelection( x, y, w, h, a )
-	
-		draw.RoundedBox( 6, x, y, w, h, Color( 0, 0, 100, a - 100 ) )
-		draw.SimpleText( "2", "HL2MPTypeDeath", x + ( w / 2 ), y + ( h / 2 ), Color( 255, 255, 255, a ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	
-	end
-
-end
+SWEP.Offset = {
+        Pos = {
+        Up = -0.1,
+        Right = 0.7,
+        Forward = -0,
+        },
+        Ang = {
+        Up = 0,
+        Right = -4,
+        Forward = 180,
+        },
+		Scale = 1
+}
