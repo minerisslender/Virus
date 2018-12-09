@@ -1,4 +1,4 @@
-Recreation of Open virus
+Built of Open virus
 https://github.com/minerisslender/open_virus
 
 Make it like GMod Tower
